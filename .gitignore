@@ -1,0 +1,13 @@
+# build artifacts
+build/
+install/
+log/
+
+# ignore python cache
+__pycache__/
+*.pyc
+
+# ignore common editor/os files
+.DS_Store
+*.swp
+*~

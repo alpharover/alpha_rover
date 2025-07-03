@@ -1,0 +1,42 @@
+common:
+  msg_source: 1
+  send_point_cloud_ros: true
+  send_packet_ros: false
+  point_type: XYZIRT
+
+lidar:
+  - driver:
+      lidar_type: RSAIRY
+      msop_port: 6699
+      difop_port: 7788
+      imu_port: 6688
+      host_address: 192.168.1.10
+    ros:
+      ros_frame_id: "base_link"
+      ros_send_point_cloud_topic: "/lidar_front/points"
+      ros_send_imu_data_topic: "/lidar_front/imu"
+    transform:
+      x: 0.025
+      y: 0.0
+      z: 0.0
+      roll: 0.0
+      pitch: 0.0
+      yaw: 0.0
+
+  - driver:
+      lidar_type: RSAIRY
+      msop_port: 6699
+      difop_port: 7788
+      imu_port: 0
+      host_address: 192.168.1.11
+    ros:
+      ros_frame_id: "base_link"
+      ros_send_point_cloud_topic: "/lidar_rear/points"
+      ros_send_imu_data_topic: "/lidar_rear/imu"
+    transform:
+      x: -0.025
+      y: 0.0
+      z: 0.0
+      roll: 0.0
+      pitch: 0.0
+      yaw: 3.14159

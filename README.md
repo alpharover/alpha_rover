@@ -66,3 +66,10 @@ Sudo Access (Askpass)
 - Rotate password: edit `~/.config/alpha_ops/secrets.env` and start a new shell (or `source ~/.bashrc`).
 - Remove askpass: delete the two files above and remove the export/alias lines from `~/.bashrc` (then `exec bash`).
 - Security note: this stores a plaintext password with restrictive permissions; prefer scoped NOPASSWD sudoers in production.
+
+## Agent Onboarding (Codex/LLMs)
+
+- Start here: `AGENT_CONTEXT.md` — concise orientation for agents (paths, commands, packages, network, backups).
+- Quick overview: run `~/alpha_ops/agent-hello.sh` for a one‑shot summary and JSON context.
+- OAK quick commands: `oak start | oak map | oak foxglove | oak stop | oak lidar ...` (see `OAK_MULTI_SENSOR_LAUNCH.md`).
+- ROS 2: ensure the environment is sourced: `source /opt/ros/humble/setup.bash`.

@@ -83,3 +83,9 @@
 - Investigate robust dual‑LiDAR support with nvblox or pre‑fusion.
 - Add map save/load helpers (PLY/ESDF/Occupancy).
 - Switch mapping frame to `odom`/`map` when available; add CLI flag.
+
+## Agent Onboarding (Codex/LLMs)
+- Read `AGENT_CONTEXT.md` first for an immediate orientation (paths, commands, packages, network, backups).
+- Run `~/alpha_ops/agent-hello.sh` to print a concise overview and machine‑readable JSON summary.
+- Ensure ROS 2 env is loaded: `source /opt/ros/humble/setup.bash` before any `ros2`/`colcon` usage.
+- Entrypoint for the OAK system is the `oak` CLI (`~/.local/bin/oak`) → `ros2_ws/src/oak_multi_bringup/scripts/oak`.

@@ -51,12 +51,43 @@ check_ros_env() {
 setup_workspace() {
     print_status "Setting up workspace..."
     cd "$WORKSPACE_DIR"
-    
-    # Build required packages. Include nvblox bringup when mapping is enabled.
+
+    # Ensure rslidar_sdk has its vendor driver present (handles moved workspace or private submodule)
+    ensure_rslidar_vendor() {
+        local sdk_dir="$WORKSPACE_DIR/src/rslidar_sdk"
+        local rsdrv_dir="$sdk_dir/src/rs_driver"
+        if [ -d "$sdk_dir" ]; then
+            if [ ! -f "$rsdrv_dir/CMakeLists.txt" ]; then
+                print_warning "rs_driver not found in rslidar_sdk; attempting to initialize submodule"
+                if command -v git >/dev/null 2>&1; then
+                    # Try nested submodule init (may require GitHub access)
+                    git -C "$sdk_dir" submodule update --init --recursive src/rs_driver >/dev/null 2>&1 || true
+                fi
+            fi
+            if [ ! -f "$rsdrv_dir/CMakeLists.txt" ]; then
+                # Fallback to vendoring from legacy backup snapshot (pre-move copy)
+                local legacy_dir="$HOME/alpha_rover/legacy/src_pre_20250825/rslidar_sdk/src/rs_driver"
+                if [ -f "$legacy_dir/CMakeLists.txt" ]; then
+                    print_status "Restoring rs_driver from legacy backup snapshot"
+                    rm -rf "$rsdrv_dir"
+                    mkdir -p "$sdk_dir/src"
+                    cp -a "$legacy_dir" "$rsdrv_dir"
+                    print_success "rs_driver restored for local build"
+                else
+                    print_warning "Legacy rs_driver not found; rslidar_sdk build may fail"
+                fi
+            fi
+        fi
+    }
+
+    ensure_rslidar_vendor
+
+    # Build required packages. Always include LiDAR drivers so they are available to launch.
+    # Include nvblox bringup when mapping is enabled.
     if [ "$MAP_ENABLED" = true ]; then
-        SELECT_PACKAGES="oak_multi_bringup oak_nvblox_bringup"
+        SELECT_PACKAGES="oak_multi_bringup oak_nvblox_bringup rslidar_sdk rslidar_msg"
     else
-        SELECT_PACKAGES="oak_multi_bringup"
+        SELECT_PACKAGES="oak_multi_bringup rslidar_sdk rslidar_msg"
     fi
 
     if ! colcon build --packages-select $SELECT_PACKAGES --symlink-install; then
@@ -152,12 +183,17 @@ launch_lidars() {
 # Function to launch Foxglove bridge
 launch_foxglove() {
     if [ "$FOXGLOVE_ENABLED" = true ]; then
-        print_status "Launching Foxglove bridge..."
-        ros2 launch oak_multi_bringup foxglove_bridge.launch.py &
-        FOXGLOVE_PID=$!
-        sleep $WAIT_TIME
-        print_success "Foxglove bridge launched (PID: $FOXGLOVE_PID)"
-        print_status "Connect to ws://$(hostname -I | awk '{print $1}'):8765"
+        # If port 8765 already in use, assume an existing bridge and skip launching to avoid crash
+        if ss -lnt 2>/dev/null | grep -q "LISTEN .*:8765"; then
+            print_warning "Foxglove port 8765 already in use; reusing existing bridge"
+        else
+            print_status "Launching Foxglove bridge..."
+            ros2 launch oak_multi_bringup foxglove_bridge.launch.py &
+            FOXGLOVE_PID=$!
+            sleep $WAIT_TIME
+            print_success "Foxglove bridge launched (PID: $FOXGLOVE_PID)"
+        fi
+        print_status "Foxglove: ws://$(hostname -I | awk '{print $1}'):8765"
     fi
 }
 

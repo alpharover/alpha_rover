@@ -1,0 +1,40 @@
+"/oak_d_pro/camera":
+  ros__parameters:
+    camera.i_mx_id: "19443010C1F4771300"
+    camera.i_pipeline_type: "RGBD"
+    camera.i_usb_speed: "SUPER_PLUS"
+    camera.i_publish_tf_from_calibration: false
+    camera.i_tf_camera_name: oak_d_pro
+    camera.i_tf_base_frame: oak_d_pro
+    camera.i_tf_parent_frame: base_link
+
+    rgb.i_fps: 30.0
+
+    stereo.i_subpixel: true
+    stereo.i_lr_check: true
+    stereo.i_align_depth: true
+    stereo.i_output_disparity: false
+    stereo.i_stereo_conf_threshold: 200
+    stereo.i_publish_synced_rect_pair: true
+
+"/oak_d_sr/camera":
+  ros__parameters:
+    camera.i_mx_id: "14442C107145A4D200"
+    camera.i_pipeline_type: "Depth"
+    camera.i_usb_speed: "SUPER_PLUS"
+    camera.i_publish_tf_from_calibration: false
+    camera.i_tf_camera_name: oak_d_sr
+    camera.i_tf_base_frame: oak_d_sr
+    camera.i_tf_parent_frame: base_link
+
+    stereo.i_subpixel: true
+    stereo.i_lr_check: true
+    stereo.i_align_depth: false
+    stereo.i_fps: 20.0
+    stereo.i_publish_synced_rect_pair: false
+    stereo.i_resolution: "400P"
+    stereo.i_output_disparity: false
+    stereo.i_stereo_conf_threshold: 200
+    
+    # IMU (disable for SR)
+    imu.i_enable_imu: false

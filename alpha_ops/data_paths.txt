@@ -1,0 +1,6 @@
+# One path per line. Adjust as needed.
+/home/alpha_orin/ros2_ws
+/home/alpha_orin/isaac_ros_common
+/home/alpha_orin/leo_rover
+/home/alpha_orin/log
+/home/alpha_orin/alpha_rover

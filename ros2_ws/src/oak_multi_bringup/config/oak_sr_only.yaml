@@ -1,0 +1,23 @@
+"/oak_d_sr/camera":
+  ros__parameters:
+    # Camera/device settings
+    camera.i_mx_id: "14442C107145A4D200"
+    camera.i_pipeline_type: "Depth"      # SR has no RGB sensor
+    camera.i_usb_speed: "SUPER_PLUS"
+    camera.i_publish_tf_from_calibration: false
+    camera.i_tf_camera_name: oak_d_sr
+    camera.i_tf_base_frame: oak_d_sr
+    camera.i_tf_parent_frame: base_link
+
+    # Stereo/Depth settings
+    stereo.i_fps: 20.0
+    stereo.i_subpixel: true
+    stereo.i_lr_check: true
+    stereo.i_align_depth: false           # no RGB to align to
+    stereo.i_publish_synced_rect_pair: false  # relax strict pair publish to avoid spam
+    stereo.i_resolution: "400P"             # lighten bandwidth to improve timing margin
+    stereo.i_output_disparity: false
+    stereo.i_stereo_conf_threshold: 200
+    
+    # IMU (disable to avoid extrinsics warning + traffic if unused)
+    imu.i_enable_imu: false

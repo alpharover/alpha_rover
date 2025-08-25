@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Simple OAK launcher - easy to remember!
+# Just run: oak [start|stop|foxglove]
+
+LAUNCH_SCRIPT="/home/alpha_orin/ros2_ws/src/oak_multi_bringup/scripts/launch_all.sh"
+
+case "${1:-start}" in
+    start)
+        exec "$LAUNCH_SCRIPT" "${@:2}"
+        ;;
+    map)
+        exec "$LAUNCH_SCRIPT" --map "${@:2}"
+        ;;
+    foxglove|fox)
+        exec "$LAUNCH_SCRIPT" --foxglove "${@:2}"
+        ;;
+    stop|clean|cleanup)
+        exec "$LAUNCH_SCRIPT" --cleanup
+        ;;
+    lidar)
+        exec "/home/alpha_orin/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" "${@:2}"
+        ;;
+    help|--help|-h)
+        echo "OAK Multi Sensor Quick Launcher"
+        echo "Usage: oak [command]"
+        echo ""
+        echo "Commands:"
+        echo "  start      Launch all sensors (default)"
+        echo "  map        Launch sensors + nvblox + Foxglove"
+        echo "  foxglove   Launch all sensors + Foxglove"
+        echo "  stop       Stop all running processes"
+        echo "  lidar      Control AIRY LiDARs (status|standby|run)"
+        echo "  help       Show this help"
+        ;;
+    *)
+        echo "Unknown command: $1"
+        echo "Run 'oak help' for usage"
+        exit 1
+        ;;
+esac

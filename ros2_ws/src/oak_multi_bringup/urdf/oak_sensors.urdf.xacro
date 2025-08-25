@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="oak_sensors">
+  <!-- Base frame for the sensor fixture / robot -->
+  <link name="base_link"/>
+
+  <!-- Parameters for Robosense Airy LiDARs (front/rear) -->
+  <!-- Coordinates are relative to base_link (x forward, y left, z up) -->
+  <!-- Front sensor (airy_front): dX=110.367mm, dY=0, dZ=37.388mm
+       Orientation: z→forward, y→up, x→left
+       RPY (rad): roll=+pi/2, pitch=0, yaw=+pi/2 -->
+  <xacro:property name="airy_front_xyz" value="0.110367 0.0 0.037388"/>
+  <xacro:property name="airy_front_rpy" value="1.5707963 0.0 1.5707963"/>
+
+  <!-- Rear sensor (airy_rear): dX=203.071mm (rear, negative x), dY=0, dZ=61.3mm
+       Orientation: z→up, y→rear, x→left
+       RPY (rad): roll=0, pitch=0, yaw=+pi/2 -->
+  <xacro:property name="airy_rear_xyz" value="-0.203071 0.0 0.061300"/>
+  <xacro:property name="airy_rear_rpy" value="0.0 0.0 1.5707963"/>
+
+  <!-- OAK-D-Pro optical frame: camera_rgb_camera_optical_frame
+       Mount offsets (meters): x=0.148469, y=0.0, z=0.097926
+       Orientation: forward with -15° down tilt about optical X.
+       Approx RPY (rad): roll=-105°=-1.8325957, pitch=0, yaw=+90°=1.5707963 -->
+  <link name="camera_rgb_camera_optical_frame"/>
+  <joint name="base_to_oak_pro_optical" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_rgb_camera_optical_frame"/>
+    <!-- Forward-facing optical frame: roll = -(90° + 15°) = -105°, yaw = -90° -->
+    <origin xyz="0.148469 0.0 0.097926" rpy="-1.8325957 0.0 -1.5707963"/>
+  </joint>
+
+  <!-- OAK-D-SR optical frame: camera_right_camera_optical_frame
+       Mount offsets (meters): x=-0.211326, y=0.0, z=0.023959
+       Orientation: rear-facing with -5° down tilt about optical X.
+       RPY from tf2_echo (rad): roll=-95°=-1.6580628, pitch=0, yaw=+90°=1.5707963 -->
+  <link name="camera_right_camera_optical_frame"/>
+  <joint name="base_to_oak_sr_optical" type="fixed">
+    <parent link="base_link"/>
+    <child link="camera_right_camera_optical_frame"/>
+    <origin xyz="-0.211326 0.0 0.023959" rpy="-1.6580628 0.0 1.5707963"/>
+  </joint>
+
+  <!-- Robosense Airy LiDAR frames -->
+  <link name="airy_front"/>
+  <joint name="base_to_airy_front" type="fixed">
+    <parent link="base_link"/>
+    <child link="airy_front"/>
+    <origin xyz="${airy_front_xyz}" rpy="${airy_front_rpy}"/>
+  </joint>
+
+  <link name="airy_rear"/>
+  <joint name="base_to_airy_rear" type="fixed">
+    <parent link="base_link"/>
+    <child link="airy_rear"/>
+    <origin xyz="${airy_rear_xyz}" rpy="${airy_rear_rpy}"/>
+  </joint>
+
+</robot>

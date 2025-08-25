@@ -1,0 +1,32 @@
+foxglove_bridge:
+  ros__parameters:
+    # Allow large outgoing buffers for big clouds
+    send_buffer_limit_bytes: 33554432  # 32 MB
+    address: "0.0.0.0"                 # accept remote connections
+    # QoS overrides per topic
+    qos_overrides:
+      /oak_d_sr/points:
+        subscription:
+          reliability: best_effort
+          depth: 1
+      /oak_d_pro/points:
+        subscription:
+          reliability: best_effort
+          depth: 1
+      /tf_static:
+        subscription:
+          durability: transient_local
+          reliability: reliable
+      /tf:
+        subscription:
+          reliability: best_effort
+
+      # Airy LiDAR point clouds (best effort to avoid backpressure)
+      /airy_200/rslidar_points:
+        subscription:
+          reliability: best_effort
+          depth: 1
+      /airy_201/rslidar_points:
+        subscription:
+          reliability: best_effort
+          depth: 1

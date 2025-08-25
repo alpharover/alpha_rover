@@ -1,0 +1,20 @@
+ros__parameters:
+  # Camera/device settings
+  camera.i_mx_id: "19443010C1F4771300"
+  camera.i_pipeline_type: "RGBD"
+  camera.i_usb_speed: "SUPER_PLUS"
+  camera.i_publish_tf_from_calibration: false
+  camera.i_tf_camera_name: oak_d_pro
+  camera.i_tf_base_frame: oak_d_pro
+  camera.i_tf_parent_frame: base_link
+
+  # RGB sensor
+  rgb.i_fps: 30.0
+
+  # Stereo/Depth settings
+  stereo.i_subpixel: true
+  stereo.i_lr_check: true
+  stereo.i_align_depth: true
+  stereo.i_output_disparity: false
+  stereo.i_stereo_conf_threshold: 200
+  stereo.i_publish_synced_rect_pair: true

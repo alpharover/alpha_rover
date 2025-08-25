@@ -1,0 +1,30 @@
+nvblox_node:
+  ros__parameters:
+    # Use TF between base_link and camera frames
+    use_tf_transforms: true
+    # Build the map in base_link frame (no odom available yet)
+    global_frame: "base_link"
+    # Keep mapping local to base_link (no odom frame available yet)
+    # Note: nvblox uses TF for poses; this controls clearing/vis frames
+    map_clearing_frame_id: "base_link"
+    esdf_slice_bounds_visualization_attachment_frame_id: "base_link"
+    workspace_height_bounds_visualization_attachment_frame_id: "base_link"
+
+    # Sensor usage
+    use_depth: true
+    use_color: false
+    use_lidar: false
+
+    # QoS to match sensor topics
+    input_qos: "SENSOR_DATA"
+
+    # Voxel + ranges (tune as needed)
+    voxel_size: 0.05            # 5cm voxels
+    static_mapper:
+      projective_integrator_max_integration_distance_m: 5.0
+      projective_integrator_truncation_distance_vox: 4.0
+
+    # ESDF visualization
+    # Switch to full 3D ESDF; keep 2D slice published for convenience
+    esdf_mode: "3d"
+    publish_esdf_distance_slice: true

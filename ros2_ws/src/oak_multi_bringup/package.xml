@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>oak_multi_bringup</name>
+  <version>0.1.0</version>
+  <description>Bringup for two Luxonis OAK cameras (Pro + SR) on ROS 2 Humble</description>
+  <maintainer email="you@example.com">Tim</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rclcpp_components</exec_depend>
+  <exec_depend>depthai_ros_driver</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>depth_image_proc</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

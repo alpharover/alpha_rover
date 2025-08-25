@@ -1,0 +1,7 @@
+[backup-now] 2025-08-25T12:32:30-05:00 starting
+[guard] load1=0.21 max=9.60 cpus=12
+[repos] scanning for repos under roots from /home/alpha_orin/alpha_ops/repo_roots.txt
+[repos] found 4 repositories
+[repos] -- /home/alpha_orin/ros2_ws/src/rslidar_msg
+[repos] origin=https://github.com/RoboSense-LiDAR/rslidar_msg.git
+[repos] [warn] /home/alpha_orin/ros2_ws/src/rslidar_msg uses HTTPS; consider switching to SSH

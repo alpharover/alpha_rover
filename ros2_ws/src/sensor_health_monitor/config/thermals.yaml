@@ -1,0 +1,6 @@
+jetson_thermals:
+  ros__parameters:
+    rate_hz: 1.0
+    warn_c: 80.0
+    error_c: 90.0
+

@@ -1,0 +1,14 @@
+[Unit]
+Description=Set RoboSense AIRY LiDARs to Standby at boot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/alpha_orin/ros2_ws/src/oak_multi_bringup/scripts/airy_boot_standby.sh
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

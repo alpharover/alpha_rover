@@ -46,6 +46,8 @@ Entrypoints:
 - Restic repo: `rclone:gdrive:restic-alpha_orin`
 - Ops scripts: `~/alpha_ops/*.sh` (see `alpha_ops/README.md`)
 - Sudo askpass: configured via `~/.config/alpha_ops/secrets.env` and shell alias
+ - On-demand backup (code + data): `~/alpha_ops/backup-now.sh`
+ - Manual Git push (code only): `cd ~/alpha_rover && git push origin main`
 
 ## Known Decisions / Gotchas
 - `rslidar_sdk/src/rs_driver` is vendored (no nested submodule) to ensure builds work offline and after workspace moves/clones.
@@ -62,4 +64,3 @@ Entrypoints:
 
 ## One-Command Overview
 Run `~/alpha_ops/agent-hello.sh` to print a concise project overview and key health checks.
-

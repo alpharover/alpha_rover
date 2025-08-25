@@ -55,3 +55,14 @@ Restoring data
 Notes
 - Secrets: `alpha_ops/restic.env` is not tracked; `restic.env.example` shows required vars.
 - Vendor deps: third‑party repos are mirrored privately and included as submodules. When they change, update mirrors and then commit new submodule SHAs here.
+
+Sudo Access (Askpass)
+- Purpose: allow non-interactive `sudo` during maintenance and scripted tasks.
+- Mechanism: an askpass helper prints the password from a private file; shell alias maps `sudo` to `sudo -A`.
+- Files (local only, not tracked):
+  - `~/.config/alpha_ops/secrets.env` (chmod 600) contains `SUDO_PASSWORD='...'`.
+  - `~/.local/bin/alpha_askpass.sh` (chmod 700) reads the env file and echoes the password.
+  - `~/.bashrc` exports `SUDO_ASKPASS="$HOME/.local/bin/alpha_askpass.sh"` and aliases `sudo` to `sudo -A`.
+- Rotate password: edit `~/.config/alpha_ops/secrets.env` and start a new shell (or `source ~/.bashrc`).
+- Remove askpass: delete the two files above and remove the export/alias lines from `~/.bashrc` (then `exec bash`).
+- Security note: this stores a plaintext password with restrictive permissions; prefer scoped NOPASSWD sudoers in production.

@@ -45,3 +45,10 @@ Restore (high level)
 4) Verify: `restic -r "$RESTIC_REPOSITORY" snapshots`
 5) Restore: `restic -r "$RESTIC_REPOSITORY" restore latest --target ~/restore_sandbox`
 
+Sudo/Askpass
+- Scripts may invoke `sudo` non-interactively via askpass.
+- Local files (not tracked):
+  - `~/.config/alpha_ops/secrets.env` with `SUDO_PASSWORD='...'` (600 perms)
+  - `~/.local/bin/alpha_askpass.sh` (700 perms)
+  - `~/.bashrc` sets `SUDO_ASKPASS` and aliases `sudo` to `sudo -A`.
+- Rotate/remove as described in the root README’s “Sudo Access (Askpass)” section.

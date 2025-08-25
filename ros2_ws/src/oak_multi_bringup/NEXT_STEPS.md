@@ -4,6 +4,9 @@ Status (Humble, oak_multi_bringup)
 - TF source: URDF via robot_state_publisher (single source of truth)
   - Pro frame `camera_rgb_camera_optical_frame`: xyz [0.148469, 0, 0.097926], rpy [-1.8325957, 0, -1.5707963]
   - SR frame `camera_right_camera_optical_frame`: xyz [-0.211326, 0, 0.023959], rpy [-1.6580628, 0, 1.5707963]
+  - AIRY LiDAR frames:
+    - `airy_front`: xyz [0.110367, 0.0, 0.037388], rpy [1.5707963, 0.0, 1.5707963]
+    - `airy_rear`:  xyz [-0.203071, 0.0, 0.061300], rpy [0.0, 0.0, 1.5707963]
 - Driver TFs: disabled (`camera.i_publish_tf_from_calibration: false` for both)
 - SR: 20.0 Hz, 400P, `stereo.i_publish_synced_rect_pair: false`, IMU disabled
 - Launches:
@@ -30,9 +33,12 @@ Open Issues / TODOs
    - Rebuild + source so `robot_state.launch.py` can always use the installed path.
 
 4) Robosense Airy LiDARs (dual)
-   - Provide mount extrinsics (xyz [m], rpy [rad or deg] specify units) for left/right sensors.
-   - Update `urdf/oak_sensors.urdf.xacro` properties: `airy_left_xyz/rpy`, `airy_right_xyz/rpy`.
-   - Add frame names expected by LiDAR drivers (e.g., `laser_left`, `laser_right`) if needed.
+   - Provide mount extrinsics (xyz [m], rpy [rad] — values below) for front/rear sensors.
+   - Update `urdf/oak_sensors.urdf.xacro` properties: `airy_front_xyz/rpy`, `airy_rear_xyz/rpy`.
+   - Current validated values (from field test):
+     - `airy_front`: xyz [0.110367, 0.0, 0.037388], rpy [1.5707963, 0.0, 1.5707963]
+     - `airy_rear`:  xyz [-0.203071, 0.0, 0.061300], rpy [0.0, 0.0, 1.5707963]
+   - Add frame names expected by LiDAR drivers if needed (drivers currently use `airy_front`/`airy_rear`).
 
 5) Isaac ROS Visual SLAM integration
    - Confirm rectified image topics naming or add remaps to match Isaac’s defaults.
@@ -44,4 +50,3 @@ Quick Run Commands
 - SR: `ros2 launch oak_multi_bringup oak_sr.launch.py`
 - Multi: `ros2 launch oak_multi_bringup oak_multi.launch.py`
 - Foxglove: `ros2 launch oak_multi_bringup foxglove_bridge.launch.py` (connect to `ws://<robot-ip>:8765`)
-

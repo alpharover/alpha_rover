@@ -9,12 +9,14 @@
        Orientation: z→forward, y→up, x→left
        RPY (rad): roll=+pi/2, pitch=0, yaw=+pi/2 -->
   <xacro:property name="airy_front_xyz" value="0.110367 0.0 0.037388"/>
+  <!-- Set pitch to 0.0 per testing -->
   <xacro:property name="airy_front_rpy" value="1.5707963 0.0 1.5707963"/>
 
   <!-- Rear sensor (airy_rear): dX=203.071mm (rear, negative x), dY=0, dZ=61.3mm
        Orientation: z→up, y→rear, x→left
        RPY (rad): roll=0, pitch=0, yaw=+pi/2 -->
   <xacro:property name="airy_rear_xyz" value="-0.203071 0.0 0.061300"/>
+  <!-- Revert to original yaw -->
   <xacro:property name="airy_rear_rpy" value="0.0 0.0 1.5707963"/>
 
   <!-- OAK-D-Pro optical frame: camera_rgb_camera_optical_frame

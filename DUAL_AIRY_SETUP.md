@@ -123,6 +123,20 @@ ros2 launch oak_multi_bringup robot_state.launch.py
 The URDF defines `base_link -> airy_front` and `base_link -> airy_rear` static transforms.
 Both AIRY configs set `ros_frame_id` to these links, so clouds/IMU align in TF.
 
+Reference TF coordinates (xyz in meters, rpy in radians):
+
+```yaml
+# AIRY Front: forward-facing LiDAR
+airy_front:
+  translation: [0.110367, 0.0, 0.037388]
+  rotation: [1.5707963, 0.0, 1.5707963]
+
+# AIRY Rear: rear-facing LiDAR
+airy_rear:
+  translation: [-0.203071, 0.0, 0.061300]
+  rotation: [0.0, 0.0, 1.5707963]
+```
+
 *Last updated: August 21, 2025*
 *Dual AIRY setup successfully tested and working*
 

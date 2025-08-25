@@ -1,0 +1,12 @@
+[submodule "ros2_ws/src/rslidar_sdk"]
+	path = ros2_ws/src/rslidar_sdk
+	url = git@github.com:alpharover/rslidar_sdk-mirror.git
+	branch = alpha_orin-snap-20250825
+[submodule "ros2_ws/src/rslidar_msg"]
+	path = ros2_ws/src/rslidar_msg
+	url = git@github.com:alpharover/rslidar_msg-mirror.git
+	branch = alpha_orin-snap-20250825
+[submodule "ros2_ws/src/isaac_ros_common"]
+	path = ros2_ws/src/isaac_ros_common
+	url = git@github.com:alpharover/isaac_ros_common-mirror.git
+	branch = alpha_orin-snap-20250825

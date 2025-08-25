@@ -1,0 +1,13 @@
+repositories:
+  rslidar_sdk:
+    type: git
+    url: git@github.com:alpharover/rslidar_sdk-mirror.git
+    version: alpha_orin-snap-20250825
+  rslidar_msg:
+    type: git
+    url: git@github.com:alpharover/rslidar_msg-mirror.git
+    version: alpha_orin-snap-20250825
+  isaac_ros_common:
+    type: git
+    url: git@github.com:alpharover/isaac_ros_common-mirror.git
+    version: alpha_orin-snap-20250825

@@ -14,3 +14,5 @@ __pycache__/
 ros2_ws/build/
 ros2_ws/install/
 ros2_ws/log/
+alpha_ops/restic.env
+alpha_ops/logs/

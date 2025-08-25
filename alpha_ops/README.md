@@ -1,34 +1,47 @@
 Alpha Rover Backup Ops
 
 Overview
-- Code: pushed to GitHub (SSH). No auto-commit.
-- Data: encrypted snapshots to Google Drive via rclone + restic.
-- Cadence: weekly timer + on-demand `backup-now.sh`.
+- Code: commit/push to GitHub. Vendor deps mirrored to private repos, pinned via submodules.
+- Data: encrypted, deduplicated snapshots to Google Drive via `rclone` + `restic`.
+- Cadence: weekly timer plus on-demand `backup-now.sh`.
+
+Location
+- This folder lives in the repo at `alpha_rover/alpha_ops` and is symlinked to `~/alpha_ops`.
+- You can run scripts from either path.
 
 Prereqs
-1) Install tools (run these on Ubuntu 22.04):
-   sudo apt-get update && sudo apt-get install -y rclone restic git-lfs
+- Ubuntu 22.04 LTS on Jetson (JetPack/L4T compatible)
+- Tools: `sudo apt-get update && sudo apt-get install -y rclone restic git-lfs`
+- GitHub SSH: add `~/.ssh/id_ed25519.pub` to your GitHub → Settings → SSH keys, then `ssh -T git@github.com`.
 
-2) Configure GitHub SSH (if not already):
-   - Add this public key to your GitHub account: `~/.ssh/id_ed25519.pub`
-   - Test: ssh -T git@github.com
-
-3) Configure Google Drive remote (one-time):
-   ~/alpha_ops/setup_rclone.sh
-
-4) Initialize restic repository (one-time):
-   ~/alpha_ops/restic_init.sh
+Google Drive Setup (one-time)
+1) OAuth: `~/alpha_ops/setup_rclone.sh`
+   - Approve in browser/headless flow. This wires the Drive folder you shared.
+2) Init encrypted repo: `~/alpha_ops/restic_init.sh`
+   - Writes `alpha_ops/restic.env` (not tracked in Git). Passphrase is required for restore.
 
 Run a backup now
-~/alpha_ops/backup-now.sh
+- `~/alpha_ops/backup-now.sh`
+  - Pushes repos (origin/backup), writes system manifests, runs restic snapshot.
+
+Include/Exclude
+- Include list: `alpha_ops/data_paths.txt` (one path per line). Default includes `~/alpha_rover`.
+- Exclusions: `~/.alpha-backupignore` ignores build caches (e.g., `build/`, `install/`, `.venv/`).
 
 Enable weekly backups
-~/alpha_ops/enable-backups.sh
+- `~/alpha_ops/enable-backups.sh`
+- Change time: edit `~/.config/systemd/user/alpha-backup.timer` (`OnCalendar=`), then:
+  - `systemctl --user daemon-reload && systemctl --user restart alpha-backup.timer`
+
+Check status/logs
+- `systemctl --user list-timers | grep alpha-backup`
+- `journalctl --user -u alpha-backup.service --no-pager`
+- Logs also in `alpha_ops/logs/`.
 
 Restore (high level)
-- Install rclone + restic
-- Run setup_rclone.sh (or copy your rclone.conf)
-- Export RESTIC_PASSWORD (from restic.env) and run:
-  restic -r rclone:gdrive:restic-alpha_orin snapshots
-  restic -r rclone:gdrive:restic-alpha_orin restore latest --target ~/restore_sandbox
+1) Install `rclone` + `restic`.
+2) Run `alpha_ops/setup_rclone.sh` (or copy your `rclone.conf`).
+3) `source alpha_ops/restic.env` to load `RESTIC_REPOSITORY` and passphrase env.
+4) Verify: `restic -r "$RESTIC_REPOSITORY" snapshots`
+5) Restore: `restic -r "$RESTIC_REPOSITORY" restore latest --target ~/restore_sandbox`
 

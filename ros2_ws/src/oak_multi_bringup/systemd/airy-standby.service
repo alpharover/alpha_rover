@@ -5,7 +5,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/home/alpha_orin/ros2_ws/src/oak_multi_bringup/scripts/airy_boot_standby.sh
+ExecStart=%h/ros2_ws/src/oak_multi_bringup/scripts/airy_boot_standby.sh
 RemainAfterExit=yes
 StandardOutput=journal
 StandardError=journal

@@ -3,7 +3,7 @@
 # Simple OAK launcher - easy to remember!
 # Just run: oak [start|stop|foxglove]
 
-LAUNCH_SCRIPT="/home/alpha_orin/ros2_ws/src/oak_multi_bringup/scripts/launch_all.sh"
+LAUNCH_SCRIPT="$HOME/ros2_ws/src/oak_multi_bringup/scripts/launch_all.sh"
 
 case "${1:-start}" in
     start)
@@ -19,7 +19,7 @@ case "${1:-start}" in
         exec "$LAUNCH_SCRIPT" --cleanup
         ;;
     lidar)
-        exec "/home/alpha_orin/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" "${@:2}"
+        exec "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" "${@:2}"
         ;;
     help|--help|-h)
         echo "OAK Multi Sensor Quick Launcher"

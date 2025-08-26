@@ -115,8 +115,8 @@ cleanup_existing() {
     killall -9 rslidar_sdk_node 2>/dev/null || true
     sleep 3
     # Put LiDAR hardware into Standby as part of cleanup
-    if [ -x "/home/alpha_orin/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" ]; then
-        /home/alpha_orin/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py standby >/dev/null 2>&1 || true
+    if [ -x "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" ]; then
+        "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" standby >/dev/null 2>&1 || true
     fi
     print_success "Cleanup completed"
 }
@@ -166,8 +166,8 @@ launch_cameras() {
 launch_lidars() {
     print_status "Launching AIRY LiDARs..."
     # Ensure LiDAR hardware is in RUN mode before starting driver
-    if [ -x "/home/alpha_orin/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" ]; then
-        /home/alpha_orin/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py run >/dev/null 2>&1 || print_warning "Failed to set LiDARs to RUN; continuing"
+    if [ -x "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" ]; then
+        "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" run >/dev/null 2>&1 || print_warning "Failed to set LiDARs to RUN; continuing"
         sleep 2
     fi
     if ros2 pkg list | grep -q rslidar_sdk; then
@@ -296,8 +296,8 @@ cleanup_and_exit() {
     
     sleep 2
     # Put LiDAR hardware into Standby to reduce heat
-    if [ -x "/home/alpha_orin/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" ]; then
-        /home/alpha_orin/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py standby >/dev/null 2>&1 || true
+    if [ -x "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" ]; then
+        "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" standby >/dev/null 2>&1 || true
     fi
     print_success "All processes stopped"
     exit 0

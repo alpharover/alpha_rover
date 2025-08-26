@@ -1,6 +1,6 @@
 #!/bin/bash
 # Ensure RoboSense AIRY units enter Standby on boot
-SCRIPT="/home/alpha_orin/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py"
+SCRIPT="$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py"
 RETRIES=20
 SLEEP=3
 
@@ -14,4 +14,3 @@ for i in $(seq 1 $RETRIES); do
 done
 echo "[airy-boot-standby] failed to set standby after $RETRIES attempts"
 exit 1
-

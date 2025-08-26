@@ -1,4 +1,2 @@
-# Roots to scan for git repositories
-/home/alpha_orin/ros2_ws
-/home/alpha_orin/isaac_ros_common
+# Roots to scan for git repositories (center on SSoT)
 /home/alpha_orin/alpha_rover

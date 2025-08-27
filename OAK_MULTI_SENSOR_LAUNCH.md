@@ -6,7 +6,7 @@
 # Essential Commands (Easy to Remember)
 oak start                   # Launch all sensors
 oak map [--lidar front|rear|both]
-oak map --lidar-only [--lidar front|rear]   # Map with LiDAR only (no cameras)
+oak map --lidar-only [--lidar front|rear]   # Map with LiDAR only (now uses repack by default)
 oak foxglove                # Launch all sensors + Foxglove bridge
 oak stop                    # Stop all processes cleanly
 
@@ -27,7 +27,9 @@ oak lidar standby --lidar front|rear   # Target a specific unit
 
 ### Launcher Integration
 - `oak start`/`oak map` sets AIRY to Run before launching `rslidar_sdk`.
-- `oak map --lidar-only --lidar rear` starts only the rear LiDAR driver and maps with LiDAR-only nvblox.
+- `oak map --lidar-only --lidar rear` starts only the rear LiDAR driver and maps with LiDAR-only NVBlox.
+  - NVBlox is launched with LiDAR repack enabled (fast C++ row reorder) to match AIRY vertical model.
+  - Customize NVBlox via `NVBLOX_ARGS`, e.g.: `export NVBLOX_ARGS="voxel_size:=0.10 lidar_integrate_hz:=10.0 streamer_mbps:=10.0"`.
 - `oak stop` (and cleanup) sets AIRY back to Standby.
 
 ### Manual Control

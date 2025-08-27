@@ -1,7 +1,7 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition, UnlessCondition
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch.actions import ExecuteProcess
 from ament_index_python.packages import get_package_share_directory
@@ -24,7 +24,9 @@ def generate_launch_description():
     lidar_integrate_hz = LaunchConfiguration('lidar_integrate_hz')
     streamer_mbps = LaunchConfiguration('streamer_mbps')
     repack_throttle_n = LaunchConfiguration('repack_throttle_n')
+    repack_qos_depth = LaunchConfiguration('repack_qos_depth')
 
+    # Python repacker only when use_repack==true AND use_cpp_repack==false
     repack = ExecuteProcess(
         cmd=[
             'python3', '-m', 'lidar_tools.pc_repack',
@@ -35,7 +37,10 @@ def generate_launch_description():
             '--angle-csv', repack_angle_csv,
         ],
         output='screen',
-        condition=IfCondition(use_repack),
+        condition=IfCondition(PythonExpression([
+            "'", LaunchConfiguration('use_repack'), "' == 'true' and '",
+            LaunchConfiguration('use_cpp_repack'), "' != 'true'"
+        ])),
     )
 
     # C++ reordering node (faster than Python)
@@ -50,9 +55,13 @@ def generate_launch_description():
             {'out_frame': repack_out_frame},
             {'angle_csv': repack_angle_csv},
             {'throttle_n': repack_throttle_n},
-            {'qos_depth': 1},
+            {'qos_depth': repack_qos_depth},
         ],
-        condition=IfCondition(LaunchConfiguration('use_cpp_repack')),
+        # Only run when both use_repack and use_cpp_repack are true
+        condition=IfCondition(PythonExpression([
+            "'", LaunchConfiguration('use_repack'), "' == 'true' and '",
+            LaunchConfiguration('use_cpp_repack'), "' == 'true'"
+        ])),
     )
 
     # Common parameter set for both raw and repacked pipelines
@@ -157,6 +166,8 @@ def generate_launch_description():
                               description='CSV with per-channel vertical angles to reorder rows'),
         DeclareLaunchArgument('repack_throttle_n', default_value='2',
                               description='Forward every Nth frame in C++ repack to reduce load'),
+        DeclareLaunchArgument('repack_qos_depth', default_value='1',
+                              description='QoS depth for repack publisher (SensorDataQoS).'),
         repack,
         repack_cpp,
         nvblox_repacked,

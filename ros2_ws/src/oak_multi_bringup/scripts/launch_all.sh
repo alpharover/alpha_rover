@@ -86,7 +86,7 @@ setup_workspace() {
     # Build required packages. Always include LiDAR drivers so they are available to launch.
     # Include nvblox bringup when mapping is enabled.
     if [ "$MAP_ENABLED" = true ]; then
-        SELECT_PACKAGES="oak_multi_bringup oak_nvblox_bringup rslidar_sdk rslidar_msg lidar_tools"
+        SELECT_PACKAGES="oak_multi_bringup oak_nvblox_bringup rslidar_sdk rslidar_msg lidar_tools lidar_tools_cpp"
     else
         SELECT_PACKAGES="oak_multi_bringup rslidar_sdk rslidar_msg"
     fi
@@ -103,6 +103,20 @@ setup_workspace() {
 # Function to kill existing processes
 cleanup_existing() {
     print_status "Cleaning up existing processes..."
+    # Terminate any other running launchers of this script to prevent hanging terminals
+    if command -v pgrep >/dev/null 2>&1; then
+        for pid in $(pgrep -f "oak_multi_bringup/scripts/launch_all.sh" || true); do
+            if [ "$pid" != "$$" ]; then
+                kill "$pid" 2>/dev/null || true
+            fi
+        done
+        sleep 1
+        for pid in $(pgrep -f "oak_multi_bringup/scripts/launch_all.sh" || true); do
+            if [ "$pid" != "$$" ]; then
+                kill -9 "$pid" 2>/dev/null || true
+            fi
+        done
+    fi
     pkill -f 'ros2 launch .*oak_multi_bringup' || true
     pkill -f 'component_container' || true
     pkill -f 'foxglove_bridge' || true
@@ -114,10 +128,16 @@ cleanup_existing() {
     pkill -f 'dual_airy_start' || true
     pkill -f 'lidar_tools.pc_repack' || true
     pkill -f 'pc_repack' || true
+    pkill -f 'pc_reorder' || true
+    pkill -f 'robot_state_publisher' || true
+    pkill -f 'probe_pc' || true
+    pkill -f 'probe_raw' || true
     pkill -f 'static_transform_publisher' || true
     # More aggressive cleanup for stubborn processes
     killall -9 rslidar_sdk_node 2>/dev/null || true
     pkill -9 -f 'lidar_tools.pc_repack' 2>/dev/null || true
+    pkill -9 -f 'pc_reorder' 2>/dev/null || true
+    pkill -9 -f 'robot_state_publisher' 2>/dev/null || true
     pkill -9 -f 'static_transform_publisher' 2>/dev/null || true
     sleep 3
     # Put LiDAR hardware into Standby as part of cleanup
@@ -267,9 +287,19 @@ launch_nvblox() {
                 print_warning "LiDAR-only mode does not support 'both'; defaulting to rear"
                 lidar_topic="/airy_201/rslidar_points"
             fi
-            print_status "Launching nvblox (LiDAR-only: $lidar_topic, base_link frame)..."
-            # Default to bypass repack for minimal assumptions; can toggle via launch if needed
-            ros2 launch oak_nvblox_bringup nvblox_lidar_only.launch.py lidar_points_topic:=$lidar_topic use_repack:=false > "$WORKSPACE_DIR/log_nvblox_map.txt" 2>&1 &
+            print_status "Launching nvblox (LiDAR-only with repack: $lidar_topic, base_link frame)..."
+            # Enable fast C++ repack (row reorder) by default for AIRY → NVBlox
+            # Allow extra tuning via NVBLOX_ARGS env var; fall back to known-good preset if not set
+            local extra_args
+            extra_args=${NVBLOX_ARGS:-"voxel_size:=0.05 lidar_integrate_hz:=10.0 streamer_mbps:=50.0 max_queue_len:=3"}
+            # Small delay to ensure TF and LiDAR streams are live before NVBlox subscribes
+            sleep 2
+            ros2 launch oak_nvblox_bringup nvblox_lidar_only.launch.py \
+                lidar_points_topic:=$lidar_topic \
+                use_repack:=true use_cpp_repack:=true \
+                repack_throttle_n:=1 repack_qos_depth:=1 \
+                repack_angle_csv:="$HOME/alpha_rover/channel_distance_table.csv" \
+                $extra_args > "$WORKSPACE_DIR/log_nvblox_map.txt" 2>&1 &
         elif [ "$LIDAR_MODE" = "both" ]; then
             print_status "Launching nvblox (dual cams + dual LiDAR requested)"
             print_warning "Dual-LiDAR not supported by nvblox; attempting and will fallback to front if it fails"

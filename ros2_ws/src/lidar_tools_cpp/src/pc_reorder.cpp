@@ -2,6 +2,7 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <fstream>
+#include <cmath>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -117,6 +118,59 @@ class PcReorderNode : public rclcpp::Node {
     } else {
       forward_unmodified(*msg, out);
     }
+    // Minimal probe logging on first few frames to aid bring-up
+    if (probe_count_ < 3) {
+      try {
+        const size_t H = out.height;
+        const size_t W = out.width;
+        const size_t ps = out.point_step;
+        const size_t rs = out.row_step;
+        int valid = 0, total = 0;
+        if (ps >= 12 && H > 0 && W > 0 && out.data.size() >= rs * H) {
+          auto sample_row = [&](size_t i){ return std::min(i, H - 1); };
+          auto sample_col = [&](size_t j){ return std::min(j, W - 1); };
+          for (size_t r : {size_t(0), H/4, H/2, (3*H)/4, H-1}) {
+            for (size_t c : {size_t(0), W/4, W/2, (3*W)/4, W-1}) {
+              const size_t off = sample_row(r) * rs + sample_col(c) * ps;
+              float x=0.f,y=0.f,z=0.f;
+              if (off + 12 <= out.data.size()) {
+                std::memcpy(&x, &out.data[off + 0], 4);
+                std::memcpy(&y, &out.data[off + 4], 4);
+                std::memcpy(&z, &out.data[off + 8], 4);
+                const bool nan = std::isnan(x) || std::isnan(y) || std::isnan(z);
+                const bool small = std::fabs(x) + std::fabs(y) + std::fabs(z) < 1e-6f;
+                if (!nan && !small) ++valid;
+                ++total;
+              }
+            }
+          }
+        }
+        // Strided scan to estimate overall validity
+        int valid_strided = 0, total_strided = 0;
+        const size_t row_stride = H > 0 ? std::max<size_t>(1, H/12) : 1;
+        const size_t col_stride = W > 0 ? std::max<size_t>(1, W/30) : 1;
+        for (size_t r = 0; r < H; r += row_stride) {
+          for (size_t c = 0; c < W; c += col_stride) {
+            const size_t off = r * rs + c * ps;
+            if (off + 12 <= out.data.size()) {
+              float x=0.f,y=0.f,z=0.f;
+              std::memcpy(&x, &out.data[off + 0], 4);
+              std::memcpy(&y, &out.data[off + 4], 4);
+              std::memcpy(&z, &out.data[off + 8], 4);
+              const bool nan = std::isnan(x) || std::isnan(y) || std::isnan(z);
+              const bool small = std::fabs(x) + std::fabs(y) + std::fabs(z) < 1e-6f;
+              if (!nan && !small) ++valid_strided;
+              ++total_strided;
+            }
+          }
+        }
+        RCLCPP_INFO(get_logger(),
+                    "probe frame %zu: H=%zu W=%zu ps=%zu rs=%zu valid_samples=%d/%d valid_strided=%d/%d throttle_n=%d qos_depth=%d",
+                    probe_count_, H, W, ps, rs, valid, total, valid_strided, total_strided, throttle_n_, qos_depth_);
+      } catch (...) {}
+      ++probe_count_;
+    }
+
     pub_->publish(out);
   }
 
@@ -139,6 +193,7 @@ class PcReorderNode : public rclcpp::Node {
   int throttle_n_ {1};
   int qos_depth_ {1};
   size_t count_ {0};
+  size_t probe_count_ {0};
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub_;
 };

@@ -86,3 +86,24 @@ Quick diagnostics
 - Drops: `tail -f ~/alpha_rover/ros2_ws/log_nvblox_map.txt | rg -n "Dropped an item|Rates statistics|Delay statistics" -i`
 - Cloud shape: `ros2 topic echo -n1 /airy_201/rslidar_points | rg -n "height:|width:"`
 
+
+Update — 2025‑08‑27: Repack now default in `oak map`
+---------------------------------------------------
+
+- `oak map` now launches NVBlox with LiDAR repack enabled by default (no manual NVBlox launch required).
+  - C++ repack (`lidar_tools_cpp/pc_reorder`) row‑reorders AIRY range image using `alpha_rover/channel_distance_table.csv`.
+  - Defaults: `use_repack=true`, `use_cpp_repack=true`, `repack_throttle_n=1`, `repack_qos_depth=1`.
+  - Customize NVBlox at launch via env var `NVBLOX_ARGS`, e.g.:
+    - `export NVBLOX_ARGS="voxel_size:=0.10 lidar_integrate_hz:=10.0 streamer_mbps:=10.0"`
+    - Then run `oak map --lidar-only --lidar rear`.
+- Visualization guidance:
+  - Foxglove: add `/nvblox_node/tsdf_layer_marker` (Marker) or `/nvblox_node/static_esdf_pointcloud` (PointCloud2).
+  - RViz: can render `/nvblox_node/tsdf_layer` and `/nvblox_node/mesh` directly.
+- Note: Ensure only one NVBlox instance is running. Multiple instances publishing to `/nvblox_node/*` can cause alternating voxel sizes.
+
+Shutdown robustness
+- `oak stop` now also kills:
+  - lingering `pc_reorder`/`pc_repack` repackers
+  - stray `robot_state_publisher` instances
+  - leftover probe nodes used during debugging (`probe_pc`/`probe_raw`)
+  - any other `launch_all.sh` instances to avoid hanging terminals with `rclcpp signal_handler` lines

@@ -30,6 +30,10 @@ foxglove_bridge:
         subscription:
           reliability: best_effort
           depth: 1
+      /airy_201/repacked_points:
+        subscription:
+          reliability: best_effort
+          depth: 1
       # NVBlox outputs (default node name)
       /nvblox_node/static_esdf_pointcloud:
         subscription:

@@ -24,8 +24,8 @@ It also integrates dual Robosense AIRY LiDARs into the same TF tree via URDF
    - Note: Both launches default to installed params under `share/oak_multi_bringup/config`. To override explicitly, pass `params_file:=<path>` (e.g., `.../config/oak_pro_only.yaml`, `.../config/oak_sr_only.yaml`).
 
 4) Foxglove (optional)
-   - `ros2 launch oak_multi_bringup foxglove_bridge.launch.py`
-   - Connect to `ws://<robot-ip>:8765` and set Fixed Frame to `base_link`.
+   - Direct run: `ros2 run foxglove_bridge foxglove_bridge --ros-args --params-file $HOME/ros2_ws/src/oak_multi_bringup/config/foxglove_qos.yaml -p port:=8765`
+   - Connect to `ws://<robot-ip>:8765` and set Fixed Frame to `base_link` (or `map` after VSLAM).
 
 ### Airy LiDARs (Front + Rear)
 - Launch both AIRY sensors (in a new terminal):
@@ -130,10 +130,9 @@ Provided in `config/oak_sr_only.yaml` (SR):
  - Current: RViz2 OK; Foxglove cloud pending QoS/backpressure tuning.
 
 ## Foxglove Bridge
-- Launch: `ros2 launch oak_multi_bringup foxglove_bridge.launch.py`
+- Launch: `ros2 run foxglove_bridge foxglove_bridge --ros-args --params-file $HOME/ros2_ws/src/oak_multi_bringup/config/foxglove_qos.yaml -p port:=8765`
 - QoS configured in `config/foxglove_qos.yaml` for point clouds (best_effort, depth 1) and TF (`tf_static` reliable + transient_local).
-- In Foxglove: connect to `ws://<robot-ip>:8765`, set Fixed Frame `base_link`, add `/oak_d_sr/points` or `/oak_d_pro/points`.
-  - Airy clouds: add `/airy_200/rslidar_points` and `/airy_201/rslidar_points` (QoS best_effort is preconfigured).
+- In Foxglove: connect to `ws://<robot-ip>:8765`, set Fixed Frame `base_link` (or `map` after VSLAM), add `/nvblox_node/tsdf_layer_marker`.
 
 ## End-to-End Launch (All Sensors + Foxglove)
 1) Build + source: `cd ~/ros2_ws && colcon build --symlink-install && source install/setup.bash`

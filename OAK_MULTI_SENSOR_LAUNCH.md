@@ -328,22 +328,30 @@ ros2 topic echo --once /diagnostics | grep -E "hardware_id|name: .*temperature|t
 
 ## Nvblox Mapping (Isaac ROS)
 
-Nvblox integrates depth into a GPU-accelerated TSDF/ESDF map.
+NVBlox integrates depth/LiDAR into a GPU-accelerated TSDF/ESDF map.
 
 ### Start
 - Source env: `source ~/ros2_ws/install/setup.bash`
-- One-liner (recommended): `oak map` — launches both OAK cameras (Pro + SR), nvblox (front AIRY LiDAR), and Foxglove.
+- One-liner (recommended): `oak map` — launches sensors, NVBlox, and Foxglove.
   - Options: `oak map --lidar rear` to use the rear AIRY LiDAR.
+  - LiDAR-only mapping: `oak map --lidar-only --lidar rear`
 - Manual (advanced):
   - `ros2 launch oak_nvblox_bringup nvblox_dual_cams_with_lidar.launch.py`
   - Defaults: dual cameras, front LiDAR, `global_frame=base_link`, QoS `SENSOR_DATA`, ESDF 3D.
   - Note: color is disabled to avoid BGR8 vs RGB8 mismatch; can be enabled later with RGB8 conversion.
 
-### One-liner
-- `oak map` — launches sensors, nvblox (dual cameras + front AIRY LiDAR by default), and Foxglove bridge.
+### One-liner (Simplified, Deterministic Flow)
+- `oak map` now follows a simple, robust sequence:
+  - Runs a hard cleanup (equivalent to `oak stop`).
+  - Launches TF and sensors (depth cameras optional).
+  - Launches AIRY LiDAR driver(s), then waits 10 seconds to stabilize.
+  - Starts NVBlox (once, no auto-restart), then starts Foxglove via direct run.
+  - No internal self-checkers or topic watchers are used anymore.
 - Options:
-  - `oak map --lidar rear` — use rear AIRY LiDAR only
-  - `oak map --lidar both` — experimental; nvblox may reject multi‑LiDAR; launcher will fallback to front.
+  - `oak map --lidar rear` — prefers rear AIRY LiDAR
+  - `oak map --lidar-only --lidar rear` — skip cameras; LiDAR-only mapping
+  - `NVBLOX_ARGS` can override defaults: e.g., `voxel_size:=0.07 lidar_integrate_hz:=5.0 maximum_input_queue_length:=3`
+  - `oak map --no-cleanup` — skip the pre-launch cleanup and rely on duplicate guards (advanced).
 
 ### Visualize (Foxglove)
 - Connect: `ws://<robot-ip>:8765`
@@ -360,8 +368,12 @@ Nvblox integrates depth into a GPU-accelerated TSDF/ESDF map.
 - `oak stop` to stop sensors, Foxglove, and nvblox (from `oak map`)
 
 ### Troubleshooting
-- If nvblox topics don’t appear (especially with dual LiDAR), launcher falls back to front LiDAR.
-- Inspect logs: `tail -n 200 ~/ros2_ws/log_nvblox_map.txt`.
+- Inspect: `tail -n 200 ~/ros2_ws/log_nvblox_map.txt` for NVBlox status (Rates/Delays).
+- Visualize in Foxglove: `/nvblox_node/tsdf_layer_marker` and `/nvblox_node/static_esdf_pointcloud`.
+- Lighter defaults (optional):
+  - `export NVBLOX_ARGS="voxel_size:=0.07 lidar_integrate_hz:=5.0 maximum_input_queue_length:=3 layer_streamer_bandwidth_limit_mbps:=10.0"`
+  - Then `oak stop && oak map --lidar-only --lidar rear`.
+- Clean restart: by default, `oak map` performs a full cleanup (equivalent to `oak stop`) before launching to avoid half‑dead processes and stale ROS graph entries. Use `--no-cleanup` only when you intentionally want to preserve externally started components.
 
 ### Next Steps
 - Enable color mapping once RGB8 conversion is added.
@@ -369,8 +381,12 @@ Nvblox integrates depth into a GPU-accelerated TSDF/ESDF map.
 - Add map save/load helpers and an `odom`/`map` frame option.
 
 ### Notes
-- Mapping frame is `base_link` (no `odom` yet). Update to `odom`/`map` when available.
-- OAK‑D SR and AIRY LiDARs are independent and can run alongside mapping.
+- Current mapping frame is `base_link`. We will switch to `map` once Visual SLAM is integrated.
+- OAK‑D Pro/SR and AIRY LiDARs are independent and can run alongside mapping.
+
+### Utilities
+- `oak sanity` — quick process/node/port status (no restarts or mutations).
+- Foxglove bridge runs directly via `ros2 run foxglove_bridge foxglove_bridge` with QoS overrides.
 
 ### File Structure
 ```

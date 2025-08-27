@@ -87,12 +87,13 @@ Quick diagnostics
 - Cloud shape: `ros2 topic echo -n1 /airy_201/rslidar_points | rg -n "height:|width:"`
 
 
-Update — 2025‑08‑27: Repack now default in `oak map`
+Update — 2025‑08‑27: Simplified `oak map` (deterministic)
 ---------------------------------------------------
 
-- `oak map` now launches NVBlox with LiDAR repack enabled by default (no manual NVBlox launch required).
-  - C++ repack (`lidar_tools_cpp/pc_reorder`) row‑reorders AIRY range image using `alpha_rover/channel_distance_table.csv`.
-  - Defaults: `use_repack=true`, `use_cpp_repack=true`, `repack_throttle_n=1`, `repack_qos_depth=1`.
+- `oak map` performs a hard cleanup, launches TF + sensors, brings LiDAR to RUN, waits 10 seconds, then starts NVBlox (once) before Foxglove.
+- C++ repack (`lidar_tools_cpp/pc_reorder`) is enabled by default in the NVBlox launch with `alpha_rover/channel_distance_table.csv`.
+- Defaults: `use_repack=true`, `use_cpp_repack=true`, `repack_throttle_n=1`, `repack_qos_depth=1`.
+- Removed topic watchers / self-checkers to avoid fragility; added `oak sanity` for status only.
   - Customize NVBlox at launch via env var `NVBLOX_ARGS`, e.g.:
     - `export NVBLOX_ARGS="voxel_size:=0.10 lidar_integrate_hz:=10.0 streamer_mbps:=10.0"`
     - Then run `oak map --lidar-only --lidar rear`.

@@ -21,6 +21,54 @@ NVBLOX_PID=""
 LIDAR_MODE="front"  # front|rear|both
 LIDAR_ONLY=false     # Skip cameras; map with LiDAR only
 HEALTH_ENABLED=false
+NO_CLEANUP=false     # If true, skip cleanup and enable duplicate-guards
+
+# Simple helpers for duplicate guards
+node_exists() {
+    # Usage: node_exists "/node_name"
+    timeout 2 ros2 node list 2>/dev/null | grep -q "^$1$"
+}
+
+topic_exists() {
+    # Usage: topic_exists "/topic_name"
+    timeout 2 ros2 topic list 2>/dev/null | grep -q "^$1$"
+}
+
+proc_exists() {
+    # Usage: proc_exists "pattern"
+    pgrep -f "$1" >/dev/null 2>&1
+}
+
+wait_for_pgone() {
+    # Usage: wait_for_pgone "pattern" [timeout_sec] [exclude_pid]
+    local pattern="$1"; shift
+    local timeout="${1:-5}"; shift || true
+    local exclude_pid="${1:-}"
+    local elapsed=0
+    while true; do
+        # collect pids matching pattern, excluding optional PID
+        local pids
+        pids=$(pgrep -f "$pattern" 2>/dev/null || true)
+        local remain=()
+        if [ -n "$pids" ]; then
+            for pid in $pids; do
+                if [ -z "$exclude_pid" ] || [ "$pid" != "$exclude_pid" ]; then
+                    remain+=("$pid")
+                fi
+            done
+        fi
+        if [ ${#remain[@]} -eq 0 ]; then
+            break
+        fi
+        if [ "$elapsed" -ge "$timeout" ]; then
+            # force kill only remaining PIDs (do not kill our own shell)
+            kill -9 "${remain[@]}" 2>/dev/null || true
+            break
+        fi
+        sleep 0.5
+        elapsed=$((elapsed+1))
+    done
+}
 
 # Function to print colored output
 print_status() {
@@ -103,19 +151,14 @@ setup_workspace() {
 # Function to kill existing processes
 cleanup_existing() {
     print_status "Cleaning up existing processes..."
-    # Terminate any other running launchers of this script to prevent hanging terminals
+    # Terminate any other running launchers of this script to prevent hangs
     if command -v pgrep >/dev/null 2>&1; then
         for pid in $(pgrep -f "oak_multi_bringup/scripts/launch_all.sh" || true); do
             if [ "$pid" != "$$" ]; then
                 kill "$pid" 2>/dev/null || true
             fi
         done
-        sleep 1
-        for pid in $(pgrep -f "oak_multi_bringup/scripts/launch_all.sh" || true); do
-            if [ "$pid" != "$$" ]; then
-                kill -9 "$pid" 2>/dev/null || true
-            fi
-        done
+        wait_for_pgone "oak_multi_bringup/scripts/launch_all.sh" 8 "$$"
     fi
     pkill -f 'ros2 launch .*oak_multi_bringup' || true
     pkill -f 'component_container' || true
@@ -129,6 +172,8 @@ cleanup_existing() {
     pkill -f 'lidar_tools.pc_repack' || true
     pkill -f 'pc_repack' || true
     pkill -f 'pc_reorder' || true
+    pkill -f 'wait_for_cloud' || true
+    pkill -f 'wait_for_topic' || true
     pkill -f 'robot_state_publisher' || true
     pkill -f 'probe_pc' || true
     pkill -f 'probe_raw' || true
@@ -137,9 +182,34 @@ cleanup_existing() {
     killall -9 rslidar_sdk_node 2>/dev/null || true
     pkill -9 -f 'lidar_tools.pc_repack' 2>/dev/null || true
     pkill -9 -f 'pc_reorder' 2>/dev/null || true
+    pkill -9 -f 'wait_for_cloud' 2>/dev/null || true
+    pkill -9 -f 'wait_for_topic' 2>/dev/null || true
     pkill -9 -f 'robot_state_publisher' 2>/dev/null || true
     pkill -9 -f 'static_transform_publisher' 2>/dev/null || true
-    sleep 3
+    # Wait for key processes to fully terminate to avoid race conditions
+    wait_for_pgone 'foxglove_bridge' 8
+    wait_for_pgone 'nvblox_node' 6
+    wait_for_pgone 'rslidar_sdk_node' 6
+    wait_for_pgone 'lidar_tools.pc_repack' 4
+    wait_for_pgone 'pc_reorder' 4
+    wait_for_pgone 'robot_state_publisher' 4
+    wait_for_pgone 'static_transform_publisher' 4
+    # Ensure Foxglove port is free
+    local port_wait=0
+    while ss -lnt 2>/dev/null | grep -q "LISTEN .*:8765" && [ $port_wait -lt 10 ]; do
+        sleep 0.5
+        port_wait=$((port_wait+1))
+    done
+    # Reset ROS 2 daemon to drop stale graph info
+    if command -v ros2 >/dev/null 2>&1; then
+        ros2 daemon stop >/dev/null 2>&1 || true
+        sleep 1
+        ros2 daemon start >/dev/null 2>&1 || true
+        sleep 1
+    fi
+    # Clear any stale PID/lock files
+    rm -f /tmp/oak_multi_bringup.launch.pid 2>/dev/null || true
+    rm -f /tmp/oak_multi_bringup.launch.lock 2>/dev/null || true
     # Put LiDAR hardware into Standby as part of cleanup
     if [ -x "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" ]; then
         "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" standby >/dev/null 2>&1 || true
@@ -150,6 +220,13 @@ cleanup_existing() {
 # Function to launch TF
 launch_tf() {
     print_status "Launching TF (robot_state_publisher)..."
+    # Duplicate guard (only in no-cleanup mode)
+    if [ "$NO_CLEANUP" = true ]; then
+        if node_exists "/robot_state_publisher" || proc_exists "robot_state_publisher"; then
+            print_warning "TF already running; skipping duplicate launch"
+            return 0
+        fi
+    fi
     ros2 launch oak_multi_bringup robot_state.launch.py &
     TF_PID=$!
     sleep $WAIT_TIME
@@ -169,14 +246,36 @@ launch_cameras() {
         return 0
     fi
     print_status "Launching OAK-D Pro camera..."
-    ros2 launch oak_multi_bringup oak_pro.launch.py &
-    PRO_PID=$!
-    sleep $WAIT_TIME
+    if [ "$NO_CLEANUP" = true ]; then
+        # Duplicate guard for Pro: skip if topics already exist
+        if topic_exists "/oak_d_pro/points" || topic_exists "/oak_d_pro/camera/stereo/image_raw" || proc_exists "oak_pro.launch.py"; then
+            print_warning "OAK-D Pro already running; skipping"
+        else
+            ros2 launch oak_multi_bringup oak_pro.launch.py &
+            PRO_PID=$!
+            sleep $WAIT_TIME
+        fi
+    else
+        ros2 launch oak_multi_bringup oak_pro.launch.py &
+        PRO_PID=$!
+        sleep $WAIT_TIME
+    fi
     
     print_status "Launching OAK-D SR camera..."
-    ros2 launch oak_multi_bringup oak_sr.launch.py &
-    SR_PID=$!
-    sleep $WAIT_TIME
+    if [ "$NO_CLEANUP" = true ]; then
+        # Duplicate guard for SR: skip if topics already exist
+        if topic_exists "/oak_d_sr/points" || topic_exists "/oak_d_sr/camera/stereo/image_raw" || proc_exists "oak_sr.launch.py"; then
+            print_warning "OAK-D SR already running; skipping"
+        else
+            ros2 launch oak_multi_bringup oak_sr.launch.py &
+            SR_PID=$!
+            sleep $WAIT_TIME
+        fi
+    else
+        ros2 launch oak_multi_bringup oak_sr.launch.py &
+        SR_PID=$!
+        sleep $WAIT_TIME
+    fi
     
     # Verify cameras are publishing
     if ! timeout 10 ros2 topic list | grep -q "/oak_d_pro/points"; then
@@ -206,6 +305,13 @@ launch_lidars() {
         sleep 2
     fi
     if ros2 pkg list | grep -q rslidar_sdk; then
+        if [ "$NO_CLEANUP" = true ]; then
+            # Duplicate guard: skip if driver already running
+            if node_exists "/rslidar_sdk_node" || proc_exists "rslidar_sdk_node" || proc_exists "dual_airy_start"; then
+                print_warning "rslidar_sdk already running; skipping LiDAR launch"
+                return 0
+            fi
+        fi
         if [ "$LIDAR_ONLY" = true ] && [ "$LIDAR_MODE" != "both" ]; then
             # Launch only the selected LiDAR driver directly with its config
             local prefix
@@ -238,12 +344,41 @@ launch_lidars() {
 # Function to launch Foxglove bridge
 launch_foxglove() {
     if [ "$FOXGLOVE_ENABLED" = true ]; then
-        # If port 8765 already in use, assume an existing bridge and skip launching to avoid crash
-        if ss -lnt 2>/dev/null | grep -q "LISTEN .*:8765"; then
-            print_warning "Foxglove port 8765 already in use; reusing existing bridge"
+        if [ "$NO_CLEANUP" = true ]; then
+            # In no-cleanup mode, do not start another foxglove if one is running
+            if node_exists "/foxglove_bridge" || pgrep -x foxglove_bridge >/dev/null 2>&1; then
+                print_warning "foxglove_bridge already running; skipping duplicate launch"
+                print_status "Foxglove: ws://$(hostname -I | awk '{print $1}'):8765"
+                return 0
+            fi
+            # If port 8765 already in use, assume an existing bridge and skip launching to avoid crash
+            if ss -lnt 2>/dev/null | grep -q "LISTEN .*:8765"; then
+                print_warning "Foxglove port 8765 already in use; reusing existing bridge"
+            else
+                print_status "Launching Foxglove bridge (direct run)..."
+                ros2 run foxglove_bridge foxglove_bridge --ros-args \
+                    --params-file "$HOME/ros2_ws/src/oak_multi_bringup/config/foxglove_qos.yaml" \
+                    -p port:=8765 &
+                FOXGLOVE_PID=$!
+                sleep $WAIT_TIME
+                print_success "Foxglove bridge launched (PID: $FOXGLOVE_PID)"
+            fi
         else
-            print_status "Launching Foxglove bridge..."
-            ros2 launch oak_multi_bringup foxglove_bridge.launch.py &
+            # After cleanup we ensure single instance by waiting for port to free
+            # Extra safety: terminate any lingering foxglove process before starting
+            if pgrep -x foxglove_bridge >/dev/null 2>&1; then
+                pkill -x foxglove_bridge || true
+                wait_for_pgone 'foxglove_bridge' 8
+            fi
+            local tries=0
+            while ss -lnt 2>/dev/null | grep -q "LISTEN .*:8765" && [ $tries -lt 8 ]; do
+                sleep 0.5
+                tries=$((tries+1))
+            done
+            print_status "Launching Foxglove bridge (direct run)..."
+            ros2 run foxglove_bridge foxglove_bridge --ros-args \
+                --params-file "$HOME/ros2_ws/src/oak_multi_bringup/config/foxglove_qos.yaml" \
+                -p port:=8765 &
             FOXGLOVE_PID=$!
             sleep $WAIT_TIME
             print_success "Foxglove bridge launched (PID: $FOXGLOVE_PID)"
@@ -275,64 +410,49 @@ launch_health() {
 
 # Function to launch nvblox (depth-only)
 launch_nvblox() {
-    if [ "$MAP_ENABLED" = true ]; then
-        if [ "$LIDAR_ONLY" = true ]; then
-            # LiDAR-only mapping: use the dedicated launch (no cameras)
-            local lidar_topic
-            if [ "$LIDAR_MODE" = "rear" ]; then
-                lidar_topic="/airy_201/rslidar_points"
-            elif [ "$LIDAR_MODE" = "front" ]; then
-                lidar_topic="/airy_200/rslidar_points"
-            else
-                print_warning "LiDAR-only mode does not support 'both'; defaulting to rear"
-                lidar_topic="/airy_201/rslidar_points"
-            fi
-            print_status "Launching nvblox (LiDAR-only with repack: $lidar_topic, base_link frame)..."
-            # Enable fast C++ repack (row reorder) by default for AIRY → NVBlox
-            # Allow extra tuning via NVBLOX_ARGS env var; fall back to known-good preset if not set
-            local extra_args
-            extra_args=${NVBLOX_ARGS:-"voxel_size:=0.05 lidar_integrate_hz:=10.0 streamer_mbps:=50.0 max_queue_len:=3"}
-            # Small delay to ensure TF and LiDAR streams are live before NVBlox subscribes
-            sleep 2
-            ros2 launch oak_nvblox_bringup nvblox_lidar_only.launch.py \
-                lidar_points_topic:=$lidar_topic \
-                use_repack:=true use_cpp_repack:=true \
-                repack_throttle_n:=1 repack_qos_depth:=1 \
-                repack_angle_csv:="$HOME/alpha_rover/channel_distance_table.csv" \
-                $extra_args > "$WORKSPACE_DIR/log_nvblox_map.txt" 2>&1 &
-        elif [ "$LIDAR_MODE" = "both" ]; then
-            print_status "Launching nvblox (dual cams + dual LiDAR requested)"
-            print_warning "Dual-LiDAR not supported by nvblox; attempting and will fallback to front if it fails"
-            ros2 launch oak_nvblox_bringup nvblox_dual_cams_with_lidar.launch.py > "$WORKSPACE_DIR/log_nvblox_map.txt" 2>&1 &
-        elif [ "$LIDAR_MODE" = "rear" ]; then
-            print_status "Launching nvblox (dual cams + rear LiDAR, base_link frame)..."
-            ros2 launch oak_nvblox_bringup nvblox_dual_cams_with_lidar.launch.py lidar_points_topic:=/airy_201/rslidar_points > "$WORKSPACE_DIR/log_nvblox_map.txt" 2>&1 &
+    if [ "$MAP_ENABLED" != true ]; then
+        return 0
+    fi
+    # Deterministic, no-guard NVBlox startup
+    local extra_args
+    extra_args=${NVBLOX_ARGS:-"voxel_size:=0.05 lidar_integrate_hz:=10.0 streamer_mbps:=50.0 max_queue_len:=3"}
+    if [ "$LIDAR_ONLY" = true ]; then
+        local lidar_topic
+        if [ "$LIDAR_MODE" = "rear" ]; then
+            lidar_topic="/airy_201/rslidar_points"
+        elif [ "$LIDAR_MODE" = "front" ]; then
+            lidar_topic="/airy_200/rslidar_points"
         else
-            print_status "Launching nvblox (dual cams + front LiDAR, base_link frame)..."
-            ros2 launch oak_nvblox_bringup nvblox_dual_cams_with_lidar.launch.py > "$WORKSPACE_DIR/log_nvblox_map.txt" 2>&1 &
+            print_warning "LiDAR-only mode does not support 'both'; defaulting to rear"
+            lidar_topic="/airy_201/rslidar_points"
         fi
+        print_status "LiDAR stabilize delay: 10s before NVBlox start..."
+        sleep 10
+        pkill -f nvblox_node 2>/dev/null || true
+        wait_for_pgone 'nvblox_node' 6
+        print_status "Launching nvblox (LiDAR-only; repack enabled; topic=$lidar_topic)..."
+        ros2 launch oak_nvblox_bringup nvblox_lidar_only.launch.py \
+            lidar_points_topic:=$lidar_topic \
+            use_repack:=true use_cpp_repack:=true \
+            repack_throttle_n:=1 repack_qos_depth:=1 \
+            repack_angle_csv:="$HOME/alpha_rover/channel_distance_table.csv" \
+            $extra_args > "$WORKSPACE_DIR/log_nvblox_map.txt" 2>&1 &
         NVBLOX_PID=$!
         sleep $WAIT_TIME
-        if ps -p $NVBLOX_PID > /dev/null 2>&1; then
-            print_success "nvblox launched (PID: $NVBLOX_PID)"
-            print_status "Foxglove: visualize /nvblox_node/static_esdf_pointcloud and /nvblox_node/tsdf_layer_marker"
-            # quick sanity check with fallback for dual-lidar
-            if [ "$LIDAR_ONLY" != true ] && ! timeout 10 ros2 topic list | grep -q "/nvblox_node"; then
-                print_warning "nvblox topics not detected yet; see $WORKSPACE_DIR/log_nvblox_map.txt"
-                print_warning "Falling back to dual cams + front LiDAR"
-                kill $NVBLOX_PID 2>/dev/null || true
-                sleep 2
-                ros2 launch oak_nvblox_bringup nvblox_dual_cams_with_lidar.launch.py > "$WORKSPACE_DIR/log_nvblox_map.txt" 2>&1 &
-                NVBLOX_PID=$!
-            fi
-        else
-            print_warning "nvblox process did not stay running; see $WORKSPACE_DIR/log_nvblox_map.txt"
-            if [ "$LIDAR_ONLY" != true ] && [ "$LIDAR_MODE" = "both" ]; then
-                print_warning "Falling back to front LiDAR only"
-                ros2 launch oak_nvblox_bringup nvblox_from_oak_with_lidar.launch.py > "$WORKSPACE_DIR/log_nvblox_map.txt" 2>&1 &
-                NVBLOX_PID=$!
-            fi
+        print_success "nvblox launched (PID: $NVBLOX_PID)"
+    else
+        # Cameras + LiDAR mapping
+        local lidar_param="/airy_200/rslidar_points"
+        if [ "$LIDAR_MODE" = "rear" ]; then
+            lidar_param="/airy_201/rslidar_points"
         fi
+        pkill -f nvblox_node 2>/dev/null || true
+        wait_for_pgone 'nvblox_node' 6
+        print_status "Launching nvblox (dual cams + LiDAR, topic=$lidar_param)..."
+        ros2 launch oak_nvblox_bringup nvblox_dual_cams_with_lidar.launch.py lidar_points_topic:=$lidar_param > "$WORKSPACE_DIR/log_nvblox_map.txt" 2>&1 &
+        NVBLOX_PID=$!
+        sleep $WAIT_TIME
+        print_success "nvblox launched (PID: $NVBLOX_PID)"
     fi
 }
 
@@ -371,11 +491,15 @@ cleanup_and_exit() {
     pkill -f 'pointcloud_merge.py' || true
     pkill -f 'lidar_tools.pc_repack' || true
     pkill -f 'static_transform_publisher' || true
+    pkill -f 'wait_for_cloud' || true
+    pkill -f 'wait_for_topic' || true
     sleep 1
     killall -9 rslidar_sdk_node 2>/dev/null || true
     pkill -9 -f 'nvblox_node' 2>/dev/null || true
     pkill -9 -f 'lidar_tools.pc_repack' 2>/dev/null || true
     pkill -9 -f 'static_transform_publisher' 2>/dev/null || true
+    pkill -9 -f 'wait_for_cloud' 2>/dev/null || true
+    pkill -9 -f 'wait_for_topic' 2>/dev/null || true
     
     sleep 2
     # Put LiDAR hardware into Standby to reduce heat
@@ -395,6 +519,7 @@ show_help() {
     echo "  -f, --foxglove    Enable Foxglove bridge"
     echo "  -H, --health      Enable health monitors (temps)"
     echo "  -c, --cleanup     Clean up existing processes only"
+    echo "      --no-cleanup  Skip cleanup and use duplicate guards instead"
     echo "  -h, --help        Show this help message"
     echo ""
     echo "Examples:"
@@ -434,6 +559,10 @@ while [[ $# -gt 0 ]]; do
             cleanup_existing
             exit 0
             ;;
+        --no-cleanup)
+            NO_CLEANUP=true
+            shift
+            ;;
         -h|--help)
             show_help
             exit 0
@@ -449,16 +578,44 @@ done
 # Main execution
 main() {
     print_status "Starting OAK Multi Sensor Launch..."
+    # Soft singleton via PID file (avoids stuck locks inherited by children)
+    local PID_FILE="/tmp/oak_multi_bringup.launch.pid"
+    if [ -f "$PID_FILE" ]; then
+        local oldpid; oldpid=$(cat "$PID_FILE" 2>/dev/null || true)
+        if [ -n "$oldpid" ] && [ "$oldpid" != "$$" ] && ps -p "$oldpid" >/dev/null 2>&1; then
+            print_warning "Another OAK launcher detected (pid=$oldpid); requesting it to stop..."
+            kill "$oldpid" 2>/dev/null || true
+            # Also kill any other matching launchers
+            if command -v pgrep >/dev/null 2>&1; then
+                for pid in $(pgrep -f "oak_multi_bringup/scripts/launch_all.sh" || true); do
+                    if [ "$pid" != "$$" ] && [ "$pid" != "$oldpid" ]; then
+                        kill "$pid" 2>/dev/null || true
+                    fi
+                done
+            fi
+            wait_for_pgone "oak_multi_bringup/scripts/launch_all.sh" 10 "$$"
+        fi
+        # Stale pid file — remove
+        rm -f "$PID_FILE" 2>/dev/null || true
+    fi
+    echo "$$" > "$PID_FILE" 2>/dev/null || true
+    trap 'rm -f /tmp/oak_multi_bringup.launch.pid 2>/dev/null || true' EXIT
     
     check_ros_env
-    cleanup_existing
+    if [ "$NO_CLEANUP" = true ]; then
+        print_warning "Skipping cleanup as requested; enabling duplicate guards"
+    else
+        cleanup_existing
+    fi
     setup_workspace
     launch_tf
     launch_cameras
     launch_lidars
+    # Start NVBlox before Foxglove to avoid reconnection races
+    launch_nvblox
     launch_foxglove
     launch_health
-    launch_nvblox
+    # Monitoring (PID file remains; new invocations will signal/replace)
     monitor_processes
 }
 

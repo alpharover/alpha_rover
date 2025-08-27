@@ -41,5 +41,5 @@ foxglove_bridge:
           depth: 1
       /nvblox_node/tsdf_layer_marker:
         subscription:
-          reliability: reliable
+          reliability: best_effort
           depth: 1

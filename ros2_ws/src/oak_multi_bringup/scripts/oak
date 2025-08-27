@@ -18,6 +18,9 @@ case "${1:-start}" in
     check)
         exec "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_check.sh" "${@:2}"
         ;;
+    sanity)
+        exec "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_sanity.sh" "${@:2}"
+        ;;
     stop|clean|cleanup)
         exec "$LAUNCH_SCRIPT" --cleanup
         ;;
@@ -34,6 +37,7 @@ case "${1:-start}" in
         echo "             Options: --lidar-only [--lidar front|rear] (LiDAR-only mapping)"
         echo "  foxglove   Launch all sensors + Foxglove"
         echo "  check      Preflight environment and network"
+        echo "  sanity     Check for duplicate nodes/processes and port state"
         echo "  stop       Stop all running processes"
         echo "  lidar      Control AIRY LiDARs (status|standby|run)"
         echo "  help       Show this help"

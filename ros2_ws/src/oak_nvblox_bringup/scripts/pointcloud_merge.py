@@ -47,7 +47,13 @@ class PointCloudMerge(Node):
         self.target_frame = self.get_parameter('target_frame').get_parameter_value().string_value
         self.publish_dt = 1.0 / float(self.get_parameter('publish_rate_hz').get_parameter_value().double_value)
 
-        qos = QoSProfile(
+        # Use SENSOR_DATA-like QoS on both ends for compatibility
+        qos_sub = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=10,
+        )
+        qos_pub = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
             history=HistoryPolicy.KEEP_LAST,
             depth=10,
@@ -59,9 +65,9 @@ class PointCloudMerge(Node):
         self.front_msg: Optional[PointCloud2] = None
         self.rear_msg: Optional[PointCloud2] = None
 
-        self.front_sub = self.create_subscription(PointCloud2, self.front_topic, self._front_cb, qos)
-        self.rear_sub = self.create_subscription(PointCloud2, self.rear_topic, self._rear_cb, qos)
-        self.pub = self.create_publisher(PointCloud2, self.output_topic, qos)
+        self.front_sub = self.create_subscription(PointCloud2, self.front_topic, self._front_cb, qos_sub)
+        self.rear_sub = self.create_subscription(PointCloud2, self.rear_topic, self._rear_cb, qos_sub)
+        self.pub = self.create_publisher(PointCloud2, self.output_topic, qos_pub)
 
         self.timer = self.create_timer(self.publish_dt, self._on_timer)
         self.get_logger().info(

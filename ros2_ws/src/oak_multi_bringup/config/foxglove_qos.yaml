@@ -30,3 +30,12 @@ foxglove_bridge:
         subscription:
           reliability: best_effort
           depth: 1
+      # NVBlox outputs (default node name)
+      /nvblox_node/static_esdf_pointcloud:
+        subscription:
+          reliability: reliable
+          depth: 1
+      /nvblox_node/tsdf_layer_marker:
+        subscription:
+          reliability: reliable
+          depth: 1

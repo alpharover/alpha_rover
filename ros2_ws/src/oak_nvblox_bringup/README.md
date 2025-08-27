@@ -18,7 +18,12 @@ Defaults:
 - Uses `global_frame=base_link` and QoS `SENSOR_DATA`.
 - `use_color=false` by default (avoids BGR8 vs RGB8 mismatch on OAK RGB).
  - ESDF mode is 3D; a 2D slice is also published for convenience.
- - LiDAR launch sets min range to 0.25 m by default.
+- LiDAR launch sets min range to 0.25 m by default.
+
+QoS note
+--------
+- RoboSense point clouds are now published with SensorDataQoS (BEST_EFFORT) directly from the driver for compatibility with nvblox's SENSOR_DATA input.
+- No external QoS bridge is required.
 
 Visualization (Foxglove)
 ------------------------

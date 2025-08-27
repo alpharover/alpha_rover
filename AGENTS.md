@@ -52,6 +52,7 @@
   - Install (APT): repository added and `ros-humble-isaac-ros-nvblox` installed.
   - One-liner: `oak map` — launches both OAK cameras (Pro + SR), nvblox (front AIRY LiDAR), and Foxglove.
     - Options: `oak map --lidar rear` (rear LiDAR); `--lidar both` is experimental and will auto‑fallback.
+    - LiDAR-only mapping: `oak map --lidar-only --lidar rear` (skips cameras; runs nvblox_lidar_only)
   - Manual: `ros2 launch oak_nvblox_bringup nvblox_dual_cams_with_lidar.launch.py`
     - Defaults: `global_frame=base_link`, QoS `SENSOR_DATA`, ESDF 3D, color disabled (BGR8 vs RGB8).
   - Visualize in Foxglove (fixed frame `base_link`):

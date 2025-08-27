@@ -19,6 +19,7 @@ WAIT_TIME=3
 MAP_ENABLED=false
 NVBLOX_PID=""
 LIDAR_MODE="front"  # front|rear|both
+LIDAR_ONLY=false     # Skip cameras; map with LiDAR only
 HEALTH_ENABLED=false
 
 # Function to print colored output
@@ -85,7 +86,7 @@ setup_workspace() {
     # Build required packages. Always include LiDAR drivers so they are available to launch.
     # Include nvblox bringup when mapping is enabled.
     if [ "$MAP_ENABLED" = true ]; then
-        SELECT_PACKAGES="oak_multi_bringup oak_nvblox_bringup rslidar_sdk rslidar_msg"
+        SELECT_PACKAGES="oak_multi_bringup oak_nvblox_bringup rslidar_sdk rslidar_msg lidar_tools"
     else
         SELECT_PACKAGES="oak_multi_bringup rslidar_sdk rslidar_msg"
     fi
@@ -111,8 +112,13 @@ cleanup_existing() {
     pkill -f 'rslidar_sdk' || true
     pkill -f 'rslidar_sdk_node' || true
     pkill -f 'dual_airy_start' || true
+    pkill -f 'lidar_tools.pc_repack' || true
+    pkill -f 'pc_repack' || true
+    pkill -f 'static_transform_publisher' || true
     # More aggressive cleanup for stubborn processes
     killall -9 rslidar_sdk_node 2>/dev/null || true
+    pkill -9 -f 'lidar_tools.pc_repack' 2>/dev/null || true
+    pkill -9 -f 'static_transform_publisher' 2>/dev/null || true
     sleep 3
     # Put LiDAR hardware into Standby as part of cleanup
     if [ -x "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" ]; then
@@ -138,6 +144,10 @@ launch_tf() {
 
 # Function to launch OAK cameras
 launch_cameras() {
+    if [ "$LIDAR_ONLY" = true ]; then
+        print_status "LiDAR-only mode: skipping camera launch"
+        return 0
+    fi
     print_status "Launching OAK-D Pro camera..."
     ros2 launch oak_multi_bringup oak_pro.launch.py &
     PRO_PID=$!
@@ -167,12 +177,37 @@ launch_lidars() {
     print_status "Launching AIRY LiDARs..."
     # Ensure LiDAR hardware is in RUN mode before starting driver
     if [ -x "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" ]; then
-        "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" run >/dev/null 2>&1 || print_warning "Failed to set LiDARs to RUN; continuing"
+        if [ "$LIDAR_ONLY" = true ]; then
+            # Respect selected lidar in LiDAR-only mode
+            "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" run --lidar "$LIDAR_MODE" >/dev/null 2>&1 || print_warning "Failed to set selected LiDAR to RUN; continuing"
+        else
+            "$HOME/ros2_ws/src/oak_multi_bringup/scripts/oak_lidar.py" run >/dev/null 2>&1 || print_warning "Failed to set LiDARs to RUN; continuing"
+        fi
         sleep 2
     fi
     if ros2 pkg list | grep -q rslidar_sdk; then
-        ros2 launch rslidar_sdk dual_airy_start.py &
-        LIDAR_PID=$!
+        if [ "$LIDAR_ONLY" = true ] && [ "$LIDAR_MODE" != "both" ]; then
+            # Launch only the selected LiDAR driver directly with its config
+            local prefix
+            prefix=$(ros2 pkg prefix rslidar_sdk 2>/dev/null || echo "")
+            if [ -z "$prefix" ]; then
+                print_error "Failed to resolve rslidar_sdk prefix"
+                exit 1
+            fi
+            local cfg
+            if [ "$LIDAR_MODE" = "rear" ]; then
+                cfg="$prefix/share/rslidar_sdk/config/config_airy_201.yaml"
+            else
+                cfg="$prefix/share/rslidar_sdk/config/config_airy_200.yaml"
+            fi
+            print_status "Starting rslidar_sdk_node with config: $cfg"
+            ros2 run rslidar_sdk rslidar_sdk_node --ros-args -p config_path:="$cfg" &
+            LIDAR_PID=$!
+        else
+            # Default dual launch
+            ros2 launch rslidar_sdk dual_airy_start.py &
+            LIDAR_PID=$!
+        fi
         sleep $WAIT_TIME
         print_success "AIRY LiDARs launched (PID: $LIDAR_PID)"
     else
@@ -221,7 +256,21 @@ launch_health() {
 # Function to launch nvblox (depth-only)
 launch_nvblox() {
     if [ "$MAP_ENABLED" = true ]; then
-        if [ "$LIDAR_MODE" = "both" ]; then
+        if [ "$LIDAR_ONLY" = true ]; then
+            # LiDAR-only mapping: use the dedicated launch (no cameras)
+            local lidar_topic
+            if [ "$LIDAR_MODE" = "rear" ]; then
+                lidar_topic="/airy_201/rslidar_points"
+            elif [ "$LIDAR_MODE" = "front" ]; then
+                lidar_topic="/airy_200/rslidar_points"
+            else
+                print_warning "LiDAR-only mode does not support 'both'; defaulting to rear"
+                lidar_topic="/airy_201/rslidar_points"
+            fi
+            print_status "Launching nvblox (LiDAR-only: $lidar_topic, base_link frame)..."
+            # Default to bypass repack for minimal assumptions; can toggle via launch if needed
+            ros2 launch oak_nvblox_bringup nvblox_lidar_only.launch.py lidar_points_topic:=$lidar_topic use_repack:=false > "$WORKSPACE_DIR/log_nvblox_map.txt" 2>&1 &
+        elif [ "$LIDAR_MODE" = "both" ]; then
             print_status "Launching nvblox (dual cams + dual LiDAR requested)"
             print_warning "Dual-LiDAR not supported by nvblox; attempting and will fallback to front if it fails"
             ros2 launch oak_nvblox_bringup nvblox_dual_cams_with_lidar.launch.py > "$WORKSPACE_DIR/log_nvblox_map.txt" 2>&1 &
@@ -236,9 +285,9 @@ launch_nvblox() {
         sleep $WAIT_TIME
         if ps -p $NVBLOX_PID > /dev/null 2>&1; then
             print_success "nvblox launched (PID: $NVBLOX_PID)"
-            print_status "Foxglove: visualize /nvblox_node/static_esdf_pointcloud, /nvblox_node/static_map_slice, /nvblox_node/mesh"
+            print_status "Foxglove: visualize /nvblox_node/static_esdf_pointcloud and /nvblox_node/tsdf_layer_marker"
             # quick sanity check with fallback for dual-lidar
-            if ! timeout 10 ros2 topic list | grep -q "/nvblox_node"; then
+            if [ "$LIDAR_ONLY" != true ] && ! timeout 10 ros2 topic list | grep -q "/nvblox_node"; then
                 print_warning "nvblox topics not detected yet; see $WORKSPACE_DIR/log_nvblox_map.txt"
                 print_warning "Falling back to dual cams + front LiDAR"
                 kill $NVBLOX_PID 2>/dev/null || true
@@ -248,7 +297,7 @@ launch_nvblox() {
             fi
         else
             print_warning "nvblox process did not stay running; see $WORKSPACE_DIR/log_nvblox_map.txt"
-            if [ "$LIDAR_MODE" = "both" ]; then
+            if [ "$LIDAR_ONLY" != true ] && [ "$LIDAR_MODE" = "both" ]; then
                 print_warning "Falling back to front LiDAR only"
                 ros2 launch oak_nvblox_bringup nvblox_from_oak_with_lidar.launch.py > "$WORKSPACE_DIR/log_nvblox_map.txt" 2>&1 &
                 NVBLOX_PID=$!
@@ -285,14 +334,18 @@ cleanup_and_exit() {
     [ ! -z "$SR_PID" ] && kill $SR_PID 2>/dev/null || true
     [ ! -z "$PRO_PID" ] && kill $PRO_PID 2>/dev/null || true
     [ ! -z "$TF_PID" ] && kill $TF_PID 2>/dev/null || true
-    
+
     # Kill all rslidar processes more aggressively
     pkill -f 'rslidar_sdk_node' || true
     pkill -f 'nvblox_node' || true
     pkill -f 'pointcloud_merge.py' || true
+    pkill -f 'lidar_tools.pc_repack' || true
+    pkill -f 'static_transform_publisher' || true
     sleep 1
     killall -9 rslidar_sdk_node 2>/dev/null || true
     pkill -9 -f 'nvblox_node' 2>/dev/null || true
+    pkill -9 -f 'lidar_tools.pc_repack' 2>/dev/null || true
+    pkill -9 -f 'static_transform_publisher' 2>/dev/null || true
     
     sleep 2
     # Put LiDAR hardware into Standby to reduce heat
@@ -328,6 +381,12 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -m|--map)
+            MAP_ENABLED=true
+            FOXGLOVE_ENABLED=true
+            shift
+            ;;
+        --lidar-only)
+            LIDAR_ONLY=true
             MAP_ENABLED=true
             FOXGLOVE_ENABLED=true
             shift

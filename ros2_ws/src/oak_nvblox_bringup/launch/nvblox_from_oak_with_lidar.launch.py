@@ -2,7 +2,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-from ament_index_python.packages import get_package_share_directory
+from ament_index_python.packages import get_package_share_directory, get_package_prefix
 import os
 
 
@@ -30,13 +30,17 @@ def generate_launch_description():
                 'num_cameras': 1,
                 'lidar_min_valid_range_m': lidar_min_range,
                 'lidar_max_valid_range_m': lidar_max_range,
+                # Override LiDAR dims to match AIRY output (rear debug: width=900, height=96)
+                'use_non_equal_vertical_fov_lidar_params': False,
+                'lidar_width': 900,
+                'lidar_height': 96,
             },
         ],
         remappings=[
             # Cameras
             ('camera_0/depth/image', depth_topic),
             ('camera_0/depth/camera_info', depth_info_topic),
-            # LiDAR
+            # LiDAR directly from driver (now BEST_EFFORT)
             ('pointcloud', lidar_points_topic),
         ],
     )

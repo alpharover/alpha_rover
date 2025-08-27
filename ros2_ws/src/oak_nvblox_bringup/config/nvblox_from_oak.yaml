@@ -11,20 +11,38 @@ nvblox_node:
     workspace_height_bounds_visualization_attachment_frame_id: "base_link"
 
     # Sensor usage
-    use_depth: true
+    # Default to LiDAR integration enabled; depth can be overridden by launch files.
+    use_depth: false
     use_color: false
-    use_lidar: false
+    use_lidar: true
+    # Ensure LiDAR settings are explicit
+    use_non_equal_vertical_fov_lidar_params: true
+    lidar_width: 1800
+    lidar_height: 16
+    lidar_vertical_fov_rad: 0.523599   # ~30 deg
 
     # QoS to match sensor topics
     input_qos: "SENSOR_DATA"
 
     # Voxel + ranges (tune as needed)
     voxel_size: 0.05            # 5cm voxels
+    # Integrate LiDAR at sensor rate (AIRY: 10 Hz)
+    integrate_lidar_rate_hz: 10.0
+    integrate_depth_rate_hz: 10.0
+    # Accept wide LiDAR elevation range (front/rear mounts)
+    min_angle_below_zero_elevation_rad: 1.5707963   # 90 deg below horizon
+    max_angle_above_zero_elevation_rad: 1.5707963   # 90 deg above horizon
     static_mapper:
       projective_integrator_max_integration_distance_m: 5.0
       projective_integrator_truncation_distance_vox: 4.0
+      lidar_projective_integrator_max_integration_distance_m: 20.0
 
     # ESDF visualization
     # Switch to full 3D ESDF; keep 2D slice published for convenience
     esdf_mode: "3d"
     publish_esdf_distance_slice: true
+
+    # Debugging / visibility
+    print_queue_drops_to_console: true
+    # Show TSDF even at low weights for debugging
+    layer_visualization_min_tsdf_weight: 0.0

@@ -31,6 +31,7 @@ case "${1:-start}" in
         echo "Commands:"
         echo "  start      Launch all sensors (default)"
         echo "  map        Launch sensors + nvblox + Foxglove"
+        echo "             Options: --lidar-only [--lidar front|rear] (LiDAR-only mapping)"
         echo "  foxglove   Launch all sensors + Foxglove"
         echo "  check      Preflight environment and network"
         echo "  stop       Stop all running processes"

@@ -1,7 +1,6 @@
 from setuptools import setup
-from glob import glob
 
-package_name = 'alpha_bringup'
+package_name = 'alpha_observability'
 
 setup(
     name=package_name,
@@ -10,19 +9,18 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/launch', glob('launch/*.launch.py')),
     ],
-    install_requires=['setuptools', 'PyYAML'],
+    install_requires=['setuptools'],
     zip_safe=True,
     maintainer='Alpha SW',
     maintainer_email='devnull@example.com',
-    description='Startup sequencer and config manager for ALPHA.',
+    description='SLO metrics and diagnostic publishers for ALPHA (skeleton).',
     license='Proprietary',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'config_manager = alpha_bringup.config_manager:main',
-            'startup_sequencer = alpha_bringup.startup_sequencer:main',
+            'slo_publisher = alpha_observability.slo_publisher:main',
         ],
     },
 )
+

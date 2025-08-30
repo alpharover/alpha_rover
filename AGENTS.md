@@ -11,7 +11,7 @@ links:
   readme: "./README.md"
   docs: "./docs"
 dependencies:
-  internal: ["alpha_utils","alpha_bringup","alpha_lidar_airy","alpha_mapping", "alpha_ui_api"]
+  internal: ["alpha_utils","alpha_bringup","alpha_lidar_airy","alpha_mapping","alpha_observability","alpha_ui_api"]
   external: ["isaac_ros_nvblox","isaac_ros_apriltag","ros2_tracing","linuxptp"]
 provides:
   topics_pub: []

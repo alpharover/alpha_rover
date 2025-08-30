@@ -51,6 +51,7 @@ def generate_launch_description():
                 'config': 'alpha_configs/lidar_airy.yaml',
                 'input_front_topic': '/alpha/lidar/front/points_raw',
                 'input_rear_topic': '/alpha/lidar/rear/points_raw',
+                'target_rate_hz': 0.0,
             }],
             output='screen',
         ),
@@ -153,6 +154,19 @@ def generate_launch_description():
                 'cmd_static_ms': 30.0,
                 'video_static_ms': 90.0,
                 'publish_period_sec': 1.0,
+            }],
+            output='screen',
+        ),
+
+
+        # Video budget applier (publishes target bitrate/fps)
+        Node(
+            package='alpha_comms',
+            executable='video_budget_applier',
+            name='alpha_video_budget',
+            parameters=[{
+                'default_fps': 30,
+                'default_bitrate': 6000000,
             }],
             output='screen',
         ),

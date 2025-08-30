@@ -96,6 +96,7 @@ class AiryReorderNode(Node):
         self.declare_parameter('input_front_topic', '/alpha/lidar/front/points_raw')
         self.declare_parameter('input_rear_topic', '/alpha/lidar/rear/points_raw')
         self.declare_parameter('strict', False)
+        self.declare_parameter('target_rate_hz', 0.0)  # 0 => no throttle
         cfg_path = self.get_parameter('config').get_parameter_value().string_value
         cfg = _load_yaml(cfg_path)
 
@@ -157,6 +158,15 @@ class AiryReorderNode(Node):
         self._sub_rear = self.create_subscription(PointCloud2, rear_topic, self._on_rear, qos)
 
         self.get_logger().info(f'Reorder node ready (reorder_enabled={self._reorder_enabled}, expected={self._expected_h}x{self._expected_w})')
+        # Degrade budget subscription to adjust target rate
+        try:
+            from alpha_utils.msg import DegradeBudget  # type: ignore
+            self._budget_sub = self.create_subscription(DegradeBudget, '/alpha/comms/budget_intent', self._on_budget, 10)
+        except Exception:
+            self._budget_sub = None
+        self._target_rate_hz = float(self.get_parameter('target_rate_hz').get_parameter_value().double_value)
+        self._last_pub_front = 0.0
+        self._last_pub_rear = 0.0
 
     def _process(self, msg: PointCloud2) -> PointCloud2:
         # Validate dims
@@ -235,12 +245,40 @@ class AiryReorderNode(Node):
         return out
 
     def _on_front(self, msg: PointCloud2):
-        out = self._process(msg)
-        self._pub_front.publish(out)
+        if self._should_publish('front'):
+            out = self._process(msg)
+            self._pub_front.publish(out)
 
     def _on_rear(self, msg: PointCloud2):
-        out = self._process(msg)
-        self._pub_rear.publish(out)
+        if self._should_publish('rear'):
+            out = self._process(msg)
+            self._pub_rear.publish(out)
+
+    def _should_publish(self, which: str) -> bool:
+        if self._target_rate_hz is None or self._target_rate_hz <= 0.0:
+            return True
+        now = self.get_clock().now().nanoseconds / 1e9  # float seconds
+        if which == 'front':
+            last = self._last_pub_front
+            if now - last >= (1.0 / self._target_rate_hz):
+                self._last_pub_front = now
+                return True
+            return False
+        else:
+            last = self._last_pub_rear
+            if now - last >= (1.0 / self._target_rate_hz):
+                self._last_pub_rear = now
+                return True
+            return False
+
+    def _on_budget(self, msg):
+        try:
+            hz = float(getattr(msg, 'lidar_hz', 0))
+            if hz > 0:
+                self._target_rate_hz = hz
+                self.get_logger().info(f'set target_rate_hz={hz} from budget level={getattr(msg, "level", "")}')
+        except Exception:
+            pass
 
 
 def main(args=None):

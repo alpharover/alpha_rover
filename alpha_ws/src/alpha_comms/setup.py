@@ -19,7 +19,7 @@ setup(
     entry_points={
         'console_scripts': [
             'degrade_manager = alpha_comms.degrade_manager_node:main',
+            'video_budget_applier = alpha_comms.video_budget_applier_node:main',
         ],
     },
 )
-

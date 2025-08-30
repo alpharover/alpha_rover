@@ -102,7 +102,7 @@ jobs:
       - name: Validate configs (jsonschema)
         shell: bash
         run: |
-          cd alpha_rover
+          # Run config schema validation from repo root
           python3 scripts/validate_configs.py
       - name: Test (all packages)
         continue-on-error: true
@@ -116,5 +116,15 @@ jobs:
       - name: Run unit tests (pytest)
         shell: bash
         run: |
-          cd alpha_rover
-          python3 -m pytest alpha_ws/src/alpha_lidar_airy/test alpha_ws/src/alpha_comms/test alpha_ws/src/alpha_calibration_tools/test -q
+          set -euo pipefail
+          # Source ROS 2 and the built workspace so generated Python interfaces are importable
+          source /opt/ros/humble/setup.bash
+          if [ -f alpha_ws/install/setup.bash ]; then
+            source alpha_ws/install/setup.bash
+          fi
+          # Run package unit tests directly with pytest
+          python3 -m pytest \
+            alpha_ws/src/alpha_lidar_airy/test \
+            alpha_ws/src/alpha_comms/test \
+            alpha_ws/src/alpha_calibration_tools/test \
+            -q

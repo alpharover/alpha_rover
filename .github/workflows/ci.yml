@@ -37,7 +37,7 @@ jobs:
       - name: Install base build tools
         run: |
           sudo apt-get update
-            sudo apt-get install -y \
+          sudo apt-get install -y \
             ros-humble-ros-base \
             python3-colcon-common-extensions \
             python3-colcon-ros \
@@ -53,6 +53,8 @@ jobs:
             python3-pytest \
             ros-humble-std-srvs \
             ros-humble-diagnostic-msgs
+          python3 -m pip install --user --upgrade pip
+          python3 -m pip install --user pyyaml jsonschema pytest
       - name: Resolve ROS package deps (rosdep)
         shell: bash
         run: |
@@ -97,6 +99,11 @@ jobs:
           source /opt/ros/humble/setup.bash
           cd "$ALPHA_WS"
           colcon build --merge-install --packages-up-to "$PKG_TARGET" --cmake-args -DCMAKE_BUILD_TYPE=Release
+      - name: Validate configs (jsonschema)
+        shell: bash
+        run: |
+          cd alpha_rover
+          python3 scripts/validate_configs.py
       - name: Test (packages-up-to ${{ env.PKG_TARGET }})
         continue-on-error: true
         shell: bash
@@ -106,3 +113,8 @@ jobs:
           cd "$ALPHA_WS"
           colcon test --merge-install --packages-up-to "$PKG_TARGET"
           colcon test-result --verbose
+      - name: Run unit tests (pytest)
+        shell: bash
+        run: |
+          cd alpha_rover
+          python3 -m pytest alpha_ws/src/alpha_lidar_airy/test alpha_ws/src/alpha_comms/test -q

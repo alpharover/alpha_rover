@@ -29,6 +29,7 @@ runbooks:
   start: |
     # Start reorder + telemetry
     ros2 run alpha_lidar_airy reorder_node --ros-args -p config:=alpha_configs/lidar_airy.yaml
+ros2 run alpha_lidar_airy mode_service_node --ros-args -p network_config:=alpha_configs/network.yaml -p http_enabled:=false
   stop: |
     # terminate the node process
     pkill -f alpha_lidar_airy || true
@@ -93,6 +94,7 @@ Owns LiDAR-specific quirks: toggling RoboSense AIRY op modes (Standby/Run) and r
 ### Start
 ```bash
 ros2 run alpha_lidar_airy reorder_node --ros-args -p config:=alpha_configs/lidar_airy.yaml
+ros2 run alpha_lidar_airy mode_service_node --ros-args -p network_config:=alpha_configs/network.yaml -p http_enabled:=false
 ```
 ### Stop
 ```bash

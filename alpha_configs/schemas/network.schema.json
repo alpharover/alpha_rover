@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "network",
+  "type": "object",
+  "properties": {
+    "jetson": {
+      "type": "object",
+      "properties": {
+        "nic": { "type": "string" },
+        "ipv4": { "type": "string" }
+      },
+      "required": ["nic", "ipv4"],
+      "additionalProperties": true
+    },
+    "lidar": {
+      "type": "object",
+      "properties": {
+        "front": { "$ref": "#/definitions/lidar_iface" },
+        "rear": { "$ref": "#/definitions/lidar_iface" }
+      },
+      "required": ["front", "rear"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["jetson", "lidar"],
+  "additionalProperties": true,
+  "definitions": {
+    "lidar_iface": {
+      "type": "object",
+      "properties": {
+        "ip": { "type": "string" },
+        "ports": {
+          "type": "object",
+          "properties": {
+            "msop": { "type": "integer" },
+            "difop": { "type": "integer" },
+            "imu": { "type": "integer" }
+          },
+          "required": ["msop", "difop"],
+          "additionalProperties": true
+        }
+      },
+      "required": ["ip", "ports"],
+      "additionalProperties": true
+    }
+  }
+}
+

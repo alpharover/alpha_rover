@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "lidar_airy",
+  "type": "object",
+  "properties": {
+    "vertical_angle_table_path": { "type": "string", "minLength": 1 },
+    "reorder_enabled": { "type": "boolean" },
+    "log_table_hash": { "type": "boolean" },
+    "expected_dims": {
+      "type": "object",
+      "properties": {
+        "height": { "type": "integer", "minimum": 1 },
+        "width": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["height", "width"],
+      "additionalProperties": false
+    },
+    "fov": {
+      "type": "object",
+      "properties": {
+        "min_angle_below_zero_elevation_rad": { "type": "number" },
+        "max_angle_above_zero_elevation_rad": { "type": "number" }
+      },
+      "required": ["min_angle_below_zero_elevation_rad", "max_angle_above_zero_elevation_rad"],
+      "additionalProperties": true
+    },
+    "range_m": {
+      "type": "object",
+      "properties": {
+        "min": { "type": "number", "minimum": 0 },
+        "max": { "type": "number", "minimum": 0 }
+      },
+      "required": ["min", "max"],
+      "additionalProperties": false
+    },
+    "http": {
+      "type": "object",
+      "properties": {
+        "endpoints": {
+          "type": "object",
+          "properties": {
+            "run": { "$ref": "#/definitions/endpoint" },
+            "standby": { "$ref": "#/definitions/endpoint" }
+          },
+          "required": ["run", "standby"],
+          "additionalProperties": false
+        },
+        "timeout_sec": { "type": "number", "minimum": 0.1 }
+      },
+      "required": ["endpoints"],
+      "additionalProperties": true
+    }
+  },
+  "required": [
+    "vertical_angle_table_path",
+    "reorder_enabled",
+    "expected_dims",
+    "range_m"
+  ],
+  "additionalProperties": true,
+  "definitions": {
+    "endpoint": {
+      "type": "object",
+      "properties": {
+        "method": { "type": "string" },
+        "path": { "type": "string" },
+        "body": { "type": "string" },
+        "headers": { "type": "object", "additionalProperties": { "type": "string" } }
+      },
+      "required": ["method", "path"],
+      "additionalProperties": true
+    }
+  }
+}
+

@@ -95,6 +95,7 @@ class AiryReorderNode(Node):
         self.declare_parameter('config', 'alpha_configs/lidar_airy.yaml')
         self.declare_parameter('input_front_topic', '/alpha/lidar/front/points_raw')
         self.declare_parameter('input_rear_topic', '/alpha/lidar/rear/points_raw')
+        self.declare_parameter('strict', False)
         cfg_path = self.get_parameter('config').get_parameter_value().string_value
         cfg = _load_yaml(cfg_path)
 
@@ -110,8 +111,12 @@ class AiryReorderNode(Node):
             table_path = os.path.join(os.path.dirname(os.path.abspath(cfg_path)), table_path)
         self._angle_table = _read_angle_table(table_path) if table_path else None
         self._row_order: Optional[List[int]] = None
+        strict = self.get_parameter('strict').get_parameter_value().bool_value
         if self._angle_table is None:
-            self.get_logger().warn('Angle table not found or failed to parse; pass-through mode active')
+            msg = 'Angle table not found or failed to parse'
+            if strict:
+                raise RuntimeError(msg)
+            self.get_logger().warn(msg + '; pass-through mode active')
         else:
             # Log a stable hash for provenance
             try:
@@ -125,7 +130,10 @@ class AiryReorderNode(Node):
             # Precompute destination row order (ascending by angle)
             try:
                 if len(self._angle_table) != self._expected_h:
-                    self.get_logger().warn(f'Angle table length {len(self._angle_table)} != expected height {self._expected_h}; pass-through active')
+                    msg = f'Angle table length {len(self._angle_table)} != expected height {self._expected_h}'
+                    if strict:
+                        raise RuntimeError(msg)
+                    self.get_logger().warn(msg + '; pass-through active')
                 else:
                     order = sorted(range(len(self._angle_table)), key=lambda i: self._angle_table[i])
                     self._row_order = order

@@ -1,7 +1,9 @@
 import os
 import glob
 import signal
+import json
 import yaml
+from jsonschema import validate as jsonschema_validate, ValidationError
 import rclpy
 from rclpy.node import Node
 from alpha_utils.srv import GetConfig
@@ -45,8 +47,21 @@ class ConfigManager(Node):
         for path in glob.glob(os.path.join(self.config_dir, '*.yaml')):
             key = os.path.splitext(os.path.basename(path))[0]
             try:
-                # Validate basic YAML syntax
-                yaml.safe_load(_read_file(path))
+                # Load YAML
+                content = _read_file(path)
+                data = yaml.safe_load(content)
+                # Optional: JSON Schema validation if schema exists
+                schema_path = os.path.join(self.config_dir, 'schemas', f'{key}.schema.json')
+                if os.path.isfile(schema_path):
+                    try:
+                        schema = json.loads(_read_file(schema_path))
+                        jsonschema_validate(instance=data, schema=schema)
+                    except ValidationError as ve:
+                        self.get_logger().error(f"Schema validation failed for {key}: {ve.message}")
+                        continue
+                    except Exception as e:
+                        self.get_logger().error(f"Error reading schema for {key}: {e}")
+                        continue
                 self._cache[key] = path
                 self.get_logger().info(f"Loaded config: {key} -> {path}")
             except Exception as e:
@@ -93,4 +108,3 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
-

@@ -1,5 +1,6 @@
 import time
 import yaml
+import subprocess
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -11,8 +12,10 @@ class StartupSequencer(Node):
         super().__init__('alpha_startup_sequencer')
         self.declare_parameter('sequence_config', 'alpha_configs/startup_sequence.yaml')
         self.declare_parameter('dry_run', True)
+        self.declare_parameter('start_via_ros2_run', True)
         self.status_pub = self.create_publisher(String, '/alpha/mapping/startup_status', 10)
         self.cli = self.create_client(SetLidarMode, '/alpha/ui/cmd/lidar_mode')
+        self._children = []
 
     def publish_status(self, s: str):
         msg = String()
@@ -60,7 +63,23 @@ class StartupSequencer(Node):
                 time.sleep(sec)
             elif 'start_node' in step:
                 params = step['start_node']
-                self.get_logger().info(f"START_NODE placeholder: {params}")
+                pkg = params.get('package')
+                node = params.get('node')
+                args = params.get('args', [])
+                via_run = self.get_parameter('start_via_ros2_run').get_parameter_value().bool_value
+                if dry_run:
+                    self.get_logger().info(f'DRY-RUN: start_node package={pkg} node={node} args={args}')
+                else:
+                    try:
+                        if via_run and pkg and node:
+                            cmd = ['ros2', 'run', pkg, node] + list(args)
+                            self.get_logger().info(f'starting: {cmd}')
+                            p = subprocess.Popen(cmd)
+                            self._children.append(p)
+                        else:
+                            self.get_logger().warn(f'start_node requires package and node; got {params}')
+                    except Exception as e:
+                        self.get_logger().error(f'Failed to start node: {e}')
             else:
                 self.get_logger().warn(f'Unknown step: {step}')
         self.publish_status('STARTED')
@@ -74,4 +93,3 @@ def main():
     finally:
         node.destroy_node()
         rclpy.shutdown()
-

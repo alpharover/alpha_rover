@@ -1,6 +1,6 @@
 # AGENTS Index
 
-_Generated: 2025-08-29_
+_Generated: 2025-08-30_
 
 | Agent | Type | Status | Version | Updated | Owner | Path |
 |---|---|---|---|---|---|---|

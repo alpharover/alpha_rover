@@ -1,0 +1,181 @@
+
+==============NVSMI LOG==============
+
+Timestamp                                 : Mon Aug 25 13:29:59 2025
+Driver Version                            : 540.4.0
+CUDA Version                              : 12.6
+
+Attached GPUs                             : 1
+GPU 00000000:00:00.0
+    Product Name                          : Orin (nvgpu)
+    Product Brand                         : Unknown Error
+    Product Architecture                  : Ampere
+    Display Mode                          : N/A
+    Display Active                        : N/A
+    Persistence Mode                      : N/A
+    Addressing Mode                       : N/A
+    MIG Mode
+        Current                           : N/A
+        Pending                           : N/A
+    Accounting Mode                       : N/A
+    Accounting Mode Buffer Size           : N/A
+    Driver Model
+        Current                           : N/A
+        Pending                           : N/A
+    Serial Number                         : N/A
+    GPU UUID                              : 85f3a993-0b0d-51a4-98c1-a21801b6b6ba
+    Minor Number                          : N/A
+    VBIOS Version                         : N/A
+    MultiGPU Board                        : N/A
+    Board ID                              : N/A
+    Board Part Number                     : N/A
+    GPU Part Number                       : N/A
+    FRU Part Number                       : N/A
+    Module ID                             : N/A
+    Inforom Version
+        Image Version                     : N/A
+        OEM Object                        : N/A
+        ECC Object                        : N/A
+        Power Management Object           : N/A
+    GPU Operation Mode
+        Current                           : N/A
+        Pending                           : N/A
+    GSP Firmware Version                  : N/A
+    GPU Virtualization Mode
+        Virtualization Mode               : N/A
+        Host VGPU Mode                    : N/A
+    GPU Reset Status
+        Reset Required                    : No
+        Drain and Reset Recommended       : No
+    IBMNPU
+        Relaxed Ordering Mode             : Disabled
+    PCI
+        Bus                               : N/A
+        Device                            : N/A
+        Domain                            : N/A
+        Device Id                         : N/A
+        Bus Id                            : N/A
+        Sub System Id                     : N/A
+        GPU Link Info
+            PCIe Generation
+                Max                       : N/A
+                Current                   : N/A
+                Device Current            : N/A
+                Device Max                : N/A
+                Host Max                  : N/A
+            Link Width
+                Max                       : N/A
+                Current                   : N/A
+        Bridge Chip
+            Type                          : N/A
+            Firmware                      : N/A
+        Replays Since Reset               : N/A
+        Replay Number Rollovers           : N/A
+        Tx Throughput                     : N/A
+        Rx Throughput                     : N/A
+        Atomic Caps Inbound               : N/A
+        Atomic Caps Outbound              : N/A
+    Fan Speed                             : N/A
+    Performance State                     : N/A
+    Clocks Event Reasons                  : N/A
+    FB Memory Usage
+        Total                             : N/A
+        Reserved                          : N/A
+        Used                              : N/A
+        Free                              : N/A
+    BAR1 Memory Usage
+        Total                             : N/A
+        Used                              : N/A
+        Free                              : N/A
+    Conf Compute Protected Memory Usage
+        Total                             : N/A
+        Used                              : N/A
+        Free                              : N/A
+    Compute Mode                          : N/A
+    Utilization
+        Gpu                               : N/A
+        Memory                            : N/A
+        Encoder                           : N/A
+        Decoder                           : N/A
+        JPEG                              : N/A
+        OFA                               : N/A
+    Encoder Stats
+        Active Sessions                   : N/A
+        Average FPS                       : N/A
+        Average Latency                   : N/A
+    FBC Stats
+        Active Sessions                   : N/A
+        Average FPS                       : N/A
+        Average Latency                   : N/A
+    ECC Mode
+        Current                           : N/A
+        Pending                           : N/A
+    ECC Errors
+        Volatile
+            SRAM Correctable              : N/A
+            SRAM Uncorrectable            : N/A
+            DRAM Correctable              : N/A
+            DRAM Uncorrectable            : N/A
+        Aggregate
+            SRAM Correctable              : N/A
+            SRAM Uncorrectable            : N/A
+            DRAM Correctable              : N/A
+            DRAM Uncorrectable            : N/A
+    Retired Pages
+        Single Bit ECC                    : N/A
+        Double Bit ECC                    : N/A
+        Pending Page Blacklist            : N/A
+    Remapped Rows                         : N/A
+    Temperature
+        GPU Current Temp                  : N/A
+        GPU T.Limit Temp                  : N/A
+        GPU Shutdown Temp                 : N/A
+        GPU Slowdown Temp                 : N/A
+        GPU Max Operating Temp            : N/A
+        GPU Target Temperature            : N/A
+        Memory Current Temp               : 0 C
+        Memory Max Operating Temp         : N/A
+    GPU Power Readings
+        Power Draw                        : N/A
+        Current Power Limit               : 538976.25 W
+        Requested Power Limit             : 805515.25 W
+        Default Power Limit               : NVML Shared Library Not Found
+        Min Power Limit                   : 441333.50 W
+        Max Power Limit                   : Unknown Error
+    Module Power Readings
+        Power Draw                        : N/A
+        Current Power Limit               : N/A
+        Requested Power Limit             : 805515.25 W
+        Default Power Limit               : NVML Shared Library Not Found
+        Min Power Limit                   : Unknown Error
+        Max Power Limit                   : Unknown Error
+    Clocks
+        Graphics                          : N/A
+        SM                                : N/A
+        Memory                            : N/A
+        Video                             : N/A
+    Applications Clocks
+        Graphics                          : Unknown Error
+        Memory                            : Unknown Error
+    Default Applications Clocks
+        Graphics                          : Unknown Error
+        Memory                            : Unknown Error
+    Deferred Clocks
+        Memory                            : N/A
+    Max Clocks
+        Graphics                          : N/A
+        SM                                : N/A
+        Memory                            : N/A
+        Video                             : N/A
+    Max Customer Boost Clocks
+        Graphics                          : N/A
+    Clock Policy
+        Auto Boost                        : N/A
+        Auto Boost Default                : N/A
+    Voltage
+        Graphics                          : N/A
+    Fabric
+        State                             : N/A
+        Status                            : N/A
+    Processes                             : None
+

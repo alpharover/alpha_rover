@@ -1,0 +1,180 @@
+[0;34m[INFO][0m Starting OAK Multi Sensor Launch...
+[0;34m[INFO][0m Cleaning up existing processes...
+[0;32m[SUCCESS][0m Cleanup completed
+[0;34m[INFO][0m Setting up workspace...
+Starting >>> rslidar_msg
+Starting >>> lidar_tools
+Starting >>> oak_multi_bringup
+Starting >>> oak_nvblox_bringup
+Finished <<< oak_multi_bringup [0.58s]
+Finished <<< oak_nvblox_bringup [0.59s]
+Finished <<< rslidar_msg [0.75s]
+Starting >>> rslidar_sdk
+Finished <<< rslidar_sdk [0.16s]
+Finished <<< lidar_tools [1.72s]
+
+Summary: 5 packages finished [2.25s]
+[0;32m[SUCCESS][0m Workspace built and sourced
+[0;34m[INFO][0m Launching TF (robot_state_publisher)...
+[INFO] [launch]: All log files can be found below /home/alpha_orin/.ros/log/2025-08-26-21-05-23-979961-ubuntu-223119
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [robot_state_publisher-1]: process started with pid [223124]
+[robot_state_publisher-1] [INFO] [1756260324.233219114] [robot_state_publisher]: got segment airy_front
+[robot_state_publisher-1] [INFO] [1756260324.233357542] [robot_state_publisher]: got segment airy_rear
+[robot_state_publisher-1] [INFO] [1756260324.233372678] [robot_state_publisher]: got segment base_link
+[robot_state_publisher-1] [INFO] [1756260324.233380901] [robot_state_publisher]: got segment camera_rgb_camera_optical_frame
+[robot_state_publisher-1] [INFO] [1756260324.233387877] [robot_state_publisher]: got segment camera_right_camera_optical_frame
+[0;32m[SUCCESS][0m TF launched successfully (PID: 223119)
+[0;34m[INFO][0m LiDAR-only mode: skipping camera launch
+[0;34m[INFO][0m Launching AIRY LiDARs...
+[0;34m[INFO][0m Starting rslidar_sdk_node with config: /home/alpha_orin/ros2_ws/install/rslidar_sdk/share/rslidar_sdk/config/config_airy_201.yaml
+[1m[35m********************************************************[0m
+[1m[35m**********                                    **********[0m
+[1m[35m**********    RSLidar_SDK Version: v1.5.17     **********[0m
+[1m[35m**********                                    **********[0m
+[1m[35m********************************************************[0m
+[1m[32m--------------------------------------------------------[0m
+[1m[32mConfig loaded from PATH:[0m
+[1m[32m/home/alpha_orin/ros2_ws/install/rslidar_sdk/share/rslidar_sdk/config/config_airy_201.yaml[0m
+[1m[32m--------------------------------------------------------[0m
+[1m[32m------------------------------------------------------[0m
+[1m[32mReceive Packets From : Online LiDAR[0m
+[1m[32mMsop Port: 6700[0m
+[1m[32mDifop Port: 7789[0m
+[1m[32m------------------------------------------------------[0m
+[1m[32m------------------------------------------------------[0m
+[1m[32m             RoboSense Driver Parameters [0m
+[32minput type: ONLINE_LIDAR[0m
+[32mlidar_type: RSAIRY[0m
+[32mframe_id: rslidar[0m
+[32m------------------------------------------------------[0m
+[1m[32m------------------------------------------------------[0m
+[1m[32m             RoboSense Input Parameters [0m
+[32mmsop_port: 6700[0m
+[32mdifop_port: 7789[0m
+[32mimu_port: 6689[0m
+[32muser_layer_bytes: 0[0m
+[32mtail_layer_bytes: 0[0m
+[32mhost_address: 192.168.1.10[0m
+[32mgroup_address: 0.0.0.0[0m
+[32msocket_recv_buf: 106496[0m
+[32mpcap_path: [0m
+[32mpcap_rate: 1[0m
+[32mpcap_repeat: 1[0m
+[32muse_vlan: 0[0m
+[1m[32m------------------------------------------------------[0m
+[1m[32m------------------------------------------------------[0m
+[1m[32m             RoboSense Decoder Parameters [0m
+[32mmin_distance: 0.2[0m
+[32mmax_distance: 200[0m
+[32muse_lidar_clock: 0[0m
+[32mdense_points: 0[0m
+[32mts_first_point: 1[0m
+[32mwait_for_difop: 1[0m
+[32mconfig_from_file: 0[0m
+[32mangle_path: [0m
+[32mstart_angle: 0[0m
+[32mend_angle: 360[0m
+[32msplit_frame_mode: 1[0m
+[32msplit_angle: 0[0m
+[32mnum_blks_split: 0[0m
+[1m[32m------------------------------------------------------[0m
+[1m[32m------------------------------------------------------[0m
+[1m[32m             RoboSense Transform Parameters [0m
+[32mx: 0[0m
+[32my: 0[0m
+[32mz: 0[0m
+[32mroll: 0[0m
+[32mpitch: 0[0m
+[32myaw: 0[0m
+[1m[32m------------------------------------------------------[0m
+[1m[36m------------------------------------------------------[0m
+[1m[36mSend PointCloud To : ROS[0m
+[1m[36mPointCloud Topic: /airy_201/rslidar_points[0m
+[1m[36m------------------------------------------------------[0m
+[1m[37mRoboSense-LiDAR-Driver is running.....[0m
+[0;32m[SUCCESS][0m AIRY LiDARs launched (PID: 223180)
+[0;34m[INFO][0m Launching Foxglove bridge...
+[INFO] [launch]: All log files can be found below /home/alpha_orin/.ros/log/2025-08-26-21-05-35-222561-ubuntu-223201
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [foxglove_bridge-1]: process started with pid [223205]
+[foxglove_bridge-1] [INFO] [1756260335.351622380] [foxglove_bridge]: Load Library: /opt/ros/humble/lib/libfoxglove_bridge_component.so
+[foxglove_bridge-1] [INFO] [1756260335.362567229] [foxglove_bridge]: Found class: rclcpp_components::NodeFactoryTemplate<foxglove_bridge::FoxgloveBridge>
+[foxglove_bridge-1] [INFO] [1756260335.362637179] [foxglove_bridge]: Instantiate class: rclcpp_components::NodeFactoryTemplate<foxglove_bridge::FoxgloveBridge>
+[foxglove_bridge-1] [WARN] [1756260335.362790422] [rcl.logging_rosout]: Publisher already registered for provided node name. If this is due to multiple nodes with the same name then all logs for that logger name will go out over the existing publisher. As soon as any node with that name is destructed it will unregister the publisher, preventing any further logs for that name from being published on the rosout topic.
+[foxglove_bridge-1] [INFO] [1756260335.368962507] [foxglove_bridge]: Starting foxglove_bridge (humble, 0.8.5@) with WebSocket++/0.8.2
+[foxglove_bridge-1] [INFO] [1756260335.370007406] [foxglove_bridge]: [WS] Server running without TLS
+[foxglove_bridge-1] [INFO] [1756260335.370691548] [foxglove_bridge]: [WS] WebSocket server listening at ws://0.0.0.0:8765
+[foxglove_bridge-1] [INFO] [1756260335.370716891] [foxglove_bridge]: [WS] WebSocket server run loop started
+[0;32m[SUCCESS][0m Foxglove bridge launched (PID: 223201)
+[0;34m[INFO][0m Foxglove: ws://192.168.0.10:8765
+[0;34m[INFO][0m Launching nvblox (LiDAR-only: /airy_201/rslidar_points, base_link frame)...
+[foxglove_bridge-1] [INFO] [1756260339.274260972] [foxglove_bridge]: [WS] Client 192.168.0.101:59514 connected via /
+[0;32m[SUCCESS][0m nvblox launched (PID: 223242)
+[0;34m[INFO][0m Foxglove: visualize /nvblox_node/static_esdf_pointcloud and /nvblox_node/tsdf_layer_marker
+[0;32m[SUCCESS][0m All sensors launched successfully!
+
+[0;34m[INFO][0m Active processes:
+  - TF Publisher: 223119
+  - AIRY LiDARs: 223180
+  - Foxglove: 223201
+  - nvblox: 223242
+
+[0;34m[INFO][0m Press Ctrl+C to stop all processes
+[foxglove_bridge-1] [ERROR] [1756260344.323701520] [foxglove_bridge]: Failed to retrieve parameters from node '/param_handle': Failed to retrieve parameter names for node '/param_handle'
+[foxglove_bridge-1] [WARN] [1756260344.323790797] [foxglove_bridge]: Adding node /param_handle to the ignore list to prevent repeated timeouts or failures in future parameter requests.
+[foxglove_bridge-1] [ERROR] [1756260344.323821485] [foxglove_bridge]: Failed to retrieve parameters from node '/rslidar_diag_0': Failed to retrieve parameter names for node '/rslidar_diag_0'
+[foxglove_bridge-1] [WARN] [1756260344.323832876] [foxglove_bridge]: Adding node /rslidar_diag_0 to the ignore list to prevent repeated timeouts or failures in future parameter requests.
+[foxglove_bridge-1] [ERROR] [1756260344.323887275] [foxglove_bridge]: Failed to retrieve parameters from node '/rslidar_points_destination_0': Failed to retrieve parameter names for node '/rslidar_points_destination_0'
+[foxglove_bridge-1] [WARN] [1756260344.323899562] [foxglove_bridge]: Adding node /rslidar_points_destination_0 to the ignore list to prevent repeated timeouts or failures in future parameter requests.
+[foxglove_bridge-1] [INFO] [1756260344.324960780] [foxglove_bridge]: [WS] Subscribing to connection graph updates.
+[foxglove_bridge-1] [INFO] [1756260344.327905593] [foxglove_bridge]: Subscribing to topic "/diagnostics" (diagnostic_msgs/msg/DiagnosticArray) on channel 7 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260344.332498168] [foxglove_bridge]: Subscribing to topic "/airy_201/rslidar_points" (sensor_msgs/msg/PointCloud2) on channel 8 with reliablity "best_effort"
+[foxglove_bridge-1] [INFO] [1756260344.336109458] [foxglove_bridge]: Subscribing to topic "/nvblox_node/static_esdf_pointcloud" (sensor_msgs/msg/PointCloud2) on channel 15 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260344.337916063] [foxglove_bridge]: Subscribing to topic "/nvblox_node/tsdf_layer_marker" (visualization_msgs/msg/Marker) on channel 12 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260344.340889579] [foxglove_bridge]: Subscribing to topic "/tf" (tf2_msgs/msg/TFMessage) on channel 1 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260344.343701339] [foxglove_bridge]: Subscribing to topic "/tf_static" (tf2_msgs/msg/TFMessage) on channel 5 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260344.345346765] [foxglove_bridge]: Subscribing to topic "/transform" (geometry_msgs/msg/TransformStamped) on channel 11 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260344.363233812] [foxglove_bridge]: Client 192.168.0.101:59514 is advertising "/move_base_simple/goal" (geometry_msgs/PoseStamped) on channel 1 with encoding "cdr"
+[foxglove_bridge-1] [INFO] [1756260344.365312377] [foxglove_bridge]: Client 192.168.0.101:59514 is advertising "/clicked_point" (geometry_msgs/PointStamped) on channel 2 with encoding "cdr"
+[foxglove_bridge-1] [INFO] [1756260344.367212419] [foxglove_bridge]: Client 192.168.0.101:59514 is advertising "/initialpose" (geometry_msgs/PoseWithCovarianceStamped) on channel 3 with encoding "cdr"
+[foxglove_bridge-1] [INFO] [1756260344.367475868] [foxglove_bridge]: Unsubscribing from topic "/diagnostics" (diagnostic_msgs/msg/DiagnosticArray) on channel 7
+[foxglove_bridge-1] [INFO] [1756260344.367604248] [foxglove_bridge]: Unsubscribing from topic "/airy_201/rslidar_points" (sensor_msgs/msg/PointCloud2) on channel 8
+[foxglove_bridge-1] [INFO] [1756260344.367718901] [foxglove_bridge]: Unsubscribing from topic "/nvblox_node/static_esdf_pointcloud" (sensor_msgs/msg/PointCloud2) on channel 15
+[foxglove_bridge-1] [INFO] [1756260344.367805619] [foxglove_bridge]: Unsubscribing from topic "/nvblox_node/tsdf_layer_marker" (visualization_msgs/msg/Marker) on channel 12
+[foxglove_bridge-1] [INFO] [1756260344.367835986] [foxglove_bridge]: Unsubscribing from topic "/tf" (tf2_msgs/msg/TFMessage) on channel 1
+[foxglove_bridge-1] [INFO] [1756260344.367945487] [foxglove_bridge]: Unsubscribing from topic "/tf_static" (tf2_msgs/msg/TFMessage) on channel 5
+[foxglove_bridge-1] [INFO] [1756260344.367971054] [foxglove_bridge]: Unsubscribing from topic "/transform" (geometry_msgs/msg/TransformStamped) on channel 11
+[foxglove_bridge-1] [INFO] [1756260344.368081899] [foxglove_bridge]: Subscribing to topic "/diagnostics" (diagnostic_msgs/msg/DiagnosticArray) on channel 7 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260344.370067891] [foxglove_bridge]: Subscribing to topic "/tf" (tf2_msgs/msg/TFMessage) on channel 1 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260344.372806565] [foxglove_bridge]: Subscribing to topic "/tf_static" (tf2_msgs/msg/TFMessage) on channel 5 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260344.374720399] [foxglove_bridge]: Subscribing to topic "/transform" (geometry_msgs/msg/TransformStamped) on channel 11 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260344.376964784] [foxglove_bridge]: Subscribing to topic "/airy_201/rslidar_points" (sensor_msgs/msg/PointCloud2) on channel 8 with reliablity "best_effort"
+[foxglove_bridge-1] [INFO] [1756260344.394873366] [foxglove_bridge]: Subscribing to topic "/nvblox_node/static_esdf_pointcloud" (sensor_msgs/msg/PointCloud2) on channel 15 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260344.397008122] [foxglove_bridge]: Subscribing to topic "/nvblox_node/tsdf_layer_marker" (visualization_msgs/msg/Marker) on channel 12 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260402.806242505] [foxglove_bridge]: Unsubscribing from topic "/nvblox_node/static_esdf_pointcloud" (sensor_msgs/msg/PointCloud2) on channel 15
+[foxglove_bridge-1] [INFO] [1756260403.355144543] [foxglove_bridge]: Subscribing to topic "/nvblox_node/static_esdf_pointcloud" (sensor_msgs/msg/PointCloud2) on channel 15 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260587.708778564] [foxglove_bridge]: Unsubscribing from topic "/nvblox_node/tsdf_layer_marker" (visualization_msgs/msg/Marker) on channel 12
+[foxglove_bridge-1] [INFO] [1756260588.504129945] [foxglove_bridge]: Subscribing to topic "/nvblox_node/tsdf_layer_marker" (visualization_msgs/msg/Marker) on channel 12 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260592.241426240] [foxglove_bridge]: Unsubscribing from topic "/nvblox_node/tsdf_layer_marker" (visualization_msgs/msg/Marker) on channel 12
+[foxglove_bridge-1] [INFO] [1756260593.620386141] [foxglove_bridge]: Subscribing to topic "/nvblox_node/static_occupancy_grid" (nav_msgs/msg/OccupancyGrid) on channel 26 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260595.918631015] [foxglove_bridge]: Subscribing to topic "/nvblox_node/pessimistic_static_esdf_pointcloud" (sensor_msgs/msg/PointCloud2) on channel 18 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260598.067261527] [foxglove_bridge]: Subscribing to topic "/nvblox_node/dynamic_occupancy_grid" (nav_msgs/msg/OccupancyGrid) on channel 21 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260598.874667560] [foxglove_bridge]: Subscribing to topic "/nvblox_node/combined_occupancy_grid" (nav_msgs/msg/OccupancyGrid) on channel 23 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260601.350594545] [foxglove_bridge]: Unsubscribing from topic "/nvblox_node/combined_occupancy_grid" (nav_msgs/msg/OccupancyGrid) on channel 23
+[foxglove_bridge-1] [INFO] [1756260601.853901367] [foxglove_bridge]: Unsubscribing from topic "/nvblox_node/dynamic_occupancy_grid" (nav_msgs/msg/OccupancyGrid) on channel 21
+[foxglove_bridge-1] [INFO] [1756260603.683039984] [foxglove_bridge]: Unsubscribing from topic "/nvblox_node/pessimistic_static_esdf_pointcloud" (sensor_msgs/msg/PointCloud2) on channel 18
+[foxglove_bridge-1] [INFO] [1756260604.459262307] [foxglove_bridge]: Subscribing to topic "/nvblox_node/shapes_to_clear" (visualization_msgs/msg/MarkerArray) on channel 16 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260605.314389001] [foxglove_bridge]: Unsubscribing from topic "/nvblox_node/shapes_to_clear" (visualization_msgs/msg/MarkerArray) on channel 16
+[foxglove_bridge-1] [INFO] [1756260605.720124877] [foxglove_bridge]: Unsubscribing from topic "/nvblox_node/static_esdf_pointcloud" (sensor_msgs/msg/PointCloud2) on channel 15
+[foxglove_bridge-1] [INFO] [1756260607.151821757] [foxglove_bridge]: Subscribing to topic "/nvblox_node/static_esdf_pointcloud" (sensor_msgs/msg/PointCloud2) on channel 15 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260608.946149631] [foxglove_bridge]: Unsubscribing from topic "/nvblox_node/static_occupancy_grid" (nav_msgs/msg/OccupancyGrid) on channel 26
+[foxglove_bridge-1] [INFO] [1756260609.651504674] [foxglove_bridge]: Subscribing to topic "/nvblox_node/tsdf_layer_marker" (visualization_msgs/msg/Marker) on channel 12 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260696.205619211] [foxglove_bridge]: Unsubscribing from topic "/nvblox_node/tsdf_layer_marker" (visualization_msgs/msg/Marker) on channel 12
+[foxglove_bridge-1] [INFO] [1756260696.967567030] [foxglove_bridge]: Unsubscribing from topic "/nvblox_node/static_esdf_pointcloud" (sensor_msgs/msg/PointCloud2) on channel 15
+[foxglove_bridge-1] [INFO] [1756260809.673709755] [foxglove_bridge]: Removed channel 31 for topic "/nvblox_node/tsdf_layer_marker_array" (visualization_msgs/msg/MarkerArray)
+[foxglove_bridge-1] [INFO] [1756260809.673792727] [foxglove_bridge]: Removed channel 30 for topic "/goal_pose" (geometry_msgs/msg/PoseStamped)
+[foxglove_bridge-1] [INFO] [1756260838.689761879] [foxglove_bridge]: Subscribing to topic "/nvblox_node/tsdf_layer_marker" (visualization_msgs/msg/Marker) on channel 12 with reliablity "reliable"
+[foxglove_bridge-1] [INFO] [1756260843.515909069] [foxglove_bridge]: Subscribing to topic "/nvblox_node/static_esdf_pointcloud" (sensor_msgs/msg/PointCloud2) on channel 15 with reliablity "reliable"
+[INFO] [1756260901.448632370] [rclcpp]: signal_handler(signum=15)
+[INFO] [1756260901.472036082] [rclcpp]: signal_handler(signum=15)

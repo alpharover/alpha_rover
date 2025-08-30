@@ -72,3 +72,7 @@ This running log captures progress and decisions to help resume quickly.
 ---
 
 Artifacts and decisions are linked from AGENTS docs where relevant.
+
+- Recorder:
+  - Added `alpha_recorder/ring_recorder`: manages rotating rosbag2 ring (`--max-bag-duration`), trims to retention window, serves `/alpha/recorder/trigger` to gather pre-window segments and capture post-window into a new bag dir under `data/triggers/`.
+  - Status on `/alpha/recorder/status`.

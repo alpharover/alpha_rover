@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "recorder_profiles",
+  "type": "object",
+  "properties": {
+    "continuous": {
+      "type": "object",
+      "properties": {
+        "topics": { "type": "array", "items": { "type": "string" } },
+        "retention_sec": { "type": "integer", "minimum": 1 },
+        "rate_limit_hz": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "triggered": {
+      "type": "object",
+      "properties": {
+        "topics": { "type": "array", "items": { "type": "string" } },
+        "pre_sec": { "type": "integer", "minimum": 0 },
+        "post_sec": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": ["continuous", "triggered"],
+  "additionalProperties": true
+}
+

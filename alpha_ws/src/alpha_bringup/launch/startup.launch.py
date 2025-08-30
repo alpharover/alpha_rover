@@ -115,4 +115,20 @@ def generate_launch_description():
             }],
             output='screen',
         ),
+
+
+        # Forensic recorder (ring + trigger)
+        Node(
+            package='alpha_recorder',
+            executable='ring_recorder',
+            name='alpha_ring_recorder',
+            parameters=[{
+                'profile_config': 'alpha_configs/recorder_profiles.yaml',
+                'ring_dir': 'data/ring',
+                'trigger_dir': 'data/triggers',
+                'bag_duration_sec': 10,
+                'enabled': True,
+            }],
+            output='screen',
+        ),
 ])

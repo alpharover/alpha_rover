@@ -72,6 +72,10 @@ def generate_launch_description():
             package='alpha_orchestrator',
             executable='orchestrator',
             name='alpha_orchestrator',
+            parameters=[{
+                'config_failure_domains': 'alpha_configs/failure_domains.yaml',
+                'dry_run': True,
+            }],
             output='screen',
         ),
     ])

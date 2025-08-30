@@ -47,6 +47,14 @@ This running log captures progress and decisions to help resume quickly.
 - Add SMACC2 integration for `alpha_mode_manager` (replace skeleton) and recovery logic in `alpha_orchestrator`.
 - Expand CI with tests and lint; add config schema validations.
 
+## 2025-08-30 (cont.)
+- Orchestrator:
+  - Reads `alpha_configs/failure_domains.yaml`; subscribes to `/alpha/health` and emits `DOMAIN_HEALTH` events on changes.
+  - Handles `/alpha/orchestrator/cmd` actions `e_stop`, `resume`, `recover_perception`.
+  - Executes config-driven recovery lists (e.g., `perception.recovery.vslam_lost`); issues ModeSet to `FAILSAFE` when specified (dry-run by default), other actions reported via events.
+  - Launch now passes `config_failure_domains` and `dry_run`.
+- Config validation: added schema for `failure_domains.yaml`.
+
 ---
 
 Artifacts and decisions are linked from AGENTS docs where relevant.

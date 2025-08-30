@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "calibration_bounds",
+  "type": "object",
+  "additionalProperties": {
+    "type": "object",
+    "properties": {
+      "pos_mm": { "type": "number", "minimum": 0 },
+      "yaw_deg": { "type": "number", "minimum": 0 },
+      "pitch_deg": { "type": "number", "minimum": 0 },
+      "roll_deg": { "type": "number", "minimum": 0 }
+    },
+    "required": ["pos_mm", "yaw_deg", "pitch_deg", "roll_deg"],
+    "additionalProperties": true
+  }
+}
+

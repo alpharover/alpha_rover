@@ -64,6 +64,15 @@ def generate_launch_description():
             output='screen',
         ),
 
+        # TF preflight (skeleton)
+        Node(
+            package='alpha_calibration_tools',
+            executable='tf_ok',
+            name='alpha_tf_ok',
+            parameters=[{'always_ok': True}],
+            output='screen',
+        ),
+
         # Mode manager (skeleton)
         Node(
             package='alpha_mode_manager',

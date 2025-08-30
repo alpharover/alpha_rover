@@ -33,7 +33,7 @@ jobs:
         uses: ros-tooling/setup-ros@v0.7
         with:
           required-ros-distributions: humble
-      - name: Install build dependencies
+      - name: Install base build tools
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -42,6 +42,15 @@ jobs:
             ros-dev-tools \
             libyaml-cpp-dev \
             libcurl4-openssl-dev
+      - name: Resolve ROS package deps (rosdep)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          # Initialize rosdep databases if needed
+          sudo rosdep init || true
+          rosdep update
+          # Install all dependencies declared in package.xml files under the workspace
+          rosdep install --rosdistro humble --from-paths "$ALPHA_WS" -i -y
       - name: Build
         shell: bash
         run: |

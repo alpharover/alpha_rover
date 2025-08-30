@@ -133,6 +133,7 @@ cd alpha_rover
 
 # ROS 2 workspace
 mkdir -p alpha_ws/src
+# alpha_ws is the canonical workspace
 # (packages will live under alpha_ws/src as they land)
 
 # Build

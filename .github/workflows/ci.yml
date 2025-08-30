@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       ALPHA_WS: alpha_ws
-      PKG_TARGET: alpha_bringup
+      PKG_TARGET: alpha_lidar_airy
     steps:
       - uses: actions/checkout@v4
       - name: Setup ROS 2 apt sources
@@ -49,7 +49,8 @@ jobs:
             python3-wheel \
             python3-rosdep \
             libyaml-cpp-dev \
-            libcurl4-openssl-dev
+            libcurl4-openssl-dev \
+            python3-pytest
       - name: Resolve ROS package deps (rosdep)
         shell: bash
         run: |

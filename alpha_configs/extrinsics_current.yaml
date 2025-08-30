@@ -1,0 +1,14 @@
+frames:
+  base_to_lidar_front:
+    translation_m: [0.110367, 0.0, 0.037388]
+    rpy_rad: [1.5707963, 0.0, 1.5707963]
+  base_to_lidar_rear:
+    translation_m: [-0.203071, 0.0, 0.061300]
+    rpy_rad: [0.0, 0.0, 1.5707963]
+  base_to_oakd_pro_optical:
+    translation_m: [0.148469, 0.0, 0.097926]
+    rpy_rad: [-1.8325957, 0.0, -1.5707963]
+  base_to_oakd_sr_optical:
+    translation_m: [-0.211326, 0.0, 0.023959]
+    rpy_rad: [-1.6580628, 0.0, 1.5707963]
+

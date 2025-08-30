@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       ALPHA_WS: alpha_ws
-      PKG_TARGET: alpha_bringup
+      PKG_TARGET: ""
     steps:
       - uses: actions/checkout@v4
       - name: Setup ROS 2 apt sources
@@ -91,30 +91,30 @@ jobs:
         run: |
           cd "$ALPHA_WS" || exit 0
           colcon list || true
-      - name: Build (packages-up-to ${{ env.PKG_TARGET }})
+      - name: Build (all packages)
         continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
           source /opt/ros/humble/setup.bash
           cd "$ALPHA_WS"
-          colcon build --merge-install --packages-up-to "$PKG_TARGET" --cmake-args -DCMAKE_BUILD_TYPE=Release
+          colcon build --merge-install --cmake-args -DCMAKE_BUILD_TYPE=Release
       - name: Validate configs (jsonschema)
         shell: bash
         run: |
           cd alpha_rover
           python3 scripts/validate_configs.py
-      - name: Test (packages-up-to ${{ env.PKG_TARGET }})
+      - name: Test (all packages)
         continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
           source /opt/ros/humble/setup.bash
           cd "$ALPHA_WS"
-          colcon test --merge-install --packages-up-to "$PKG_TARGET"
+          colcon test --merge-install
           colcon test-result --verbose
       - name: Run unit tests (pytest)
         shell: bash
         run: |
           cd alpha_rover
-          python3 -m pytest alpha_ws/src/alpha_lidar_airy/test alpha_ws/src/alpha_comms/test -q
+          python3 -m pytest alpha_ws/src/alpha_lidar_airy/test alpha_ws/src/alpha_comms/test alpha_ws/src/alpha_calibration_tools/test -q

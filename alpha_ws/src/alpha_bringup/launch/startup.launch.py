@@ -170,4 +170,16 @@ def generate_launch_description():
             }],
             output='screen',
         ),
+
+
+        # Video controller (applies target settings; shell hook optional)
+        Node(
+            package='alpha_comms',
+            executable='video_controller',
+            name='alpha_video_controller',
+            parameters=[{
+                'apply_shell_cmd': '',  # e.g., 'nvenc_ctl --fps {fps} --bitrate {bitrate}'
+            }],
+            output='screen',
+        ),
 ])

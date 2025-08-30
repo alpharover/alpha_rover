@@ -10,6 +10,7 @@
   <buildtool_depend>ament_python</buildtool_depend>
 
   <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
   <exec_depend>alpha_utils</exec_depend>
   <exec_depend>python3-yaml</exec_depend>
 
@@ -17,4 +18,3 @@
     <build_type>ament_python</build_type>
   </export>
 </package>
-

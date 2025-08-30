@@ -23,7 +23,10 @@ configs:
   - "../alpha_configs/startup_sequence.yaml"
 runbooks:
   start: |
-    ros2 launch alpha_bringup startup.launch.py
+    # Start config manager (serves /alpha/config/get)
+    ros2 run alpha_bringup config_manager --ros-args -p config_dir:=alpha_configs
+    # In a separate terminal, run the startup sequencer (dry-run by default)
+    ros2 run alpha_bringup startup_sequencer --ros-args -p sequence_config:=alpha_configs/startup_sequence.yaml -p dry_run:=true
   stop: |
     pkill -f alpha_bringup || true
   healthcheck: |

@@ -20,7 +20,7 @@ setup(
     entry_points={
         'console_scripts': [
             'config_manager = alpha_bringup.config_manager:main',
+            'startup_sequencer = alpha_bringup.startup_sequencer:main',
         ],
     },
 )
-

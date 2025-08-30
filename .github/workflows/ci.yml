@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [ trunk ]
+  pull_request:
+    branches: [ trunk, main, '**' ]
+
+jobs:
+  docs:
+    name: Docs Validation
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install pre-commit
+        run: pipx install pre-commit
+      - name: Run pre-commit (agents index + validate)
+        run: |
+          pre-commit run --all-files || (echo 'Expected to update docs/AGENTS_INDEX.md; please commit.' && git --no-pager diff && exit 1)
+
+  build:
+    name: ROS 2 Build (Humble)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup ROS 2 apt sources
+        uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: humble
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            ros-humble-ros-base \
+            python3-colcon-common-extensions \
+            ros-dev-tools \
+            libyaml-cpp-dev \
+            libcurl4-openssl-dev
+      - name: Build
+        shell: bash
+        run: |
+          set -euo pipefail
+          source /opt/ros/humble/setup.bash
+          colcon build --base-paths alpha_ws --merge-install --cmake-args -DCMAKE_BUILD_TYPE=Release --event-handlers console_cohesion+

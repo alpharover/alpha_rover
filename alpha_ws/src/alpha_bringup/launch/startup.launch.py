@@ -100,4 +100,19 @@ def generate_launch_description():
             }],
             output='screen',
         ),
-    ])
+    
+
+        # Comms degrade manager
+        Node(
+            package='alpha_comms',
+            executable='degrade_manager',
+            name='alpha_degrade_manager',
+            parameters=[{
+                'degrade_config': 'alpha_configs/degrade_policies.yaml',
+                'manage_mapping_overlay': True,
+                'dry_run': True,
+                'good_period_sec': 5.0,
+            }],
+            output='screen',
+        ),
+])

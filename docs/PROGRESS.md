@@ -18,6 +18,7 @@ This running log captures progress and decisions to help resume quickly.
 - Launch:
   - `alpha_bringup/launch/startup.launch.py` starts config manager, sequencer, lidar nodes, mode manager, orchestrator.
   - Added time sync preflight gate and SLO publisher to launch.
+  - Added comms degrade manager to launch.
 
 - alpha_lidar_airy:
   - Added Python package with two nodes:
@@ -44,6 +45,7 @@ This running log captures progress and decisions to help resume quickly.
   - ConfigManager validates YAMLs against JSON Schemas when present (added schemas for `lidar_airy`, `network`, `modes`).
   - Added schema for `mapping_provider.yaml`.
   - Added schema for `failure_domains.yaml` and `time_sync.yaml`.
+  - Added schema for `degrade_policies.yaml`.
 
 ### Open Items / Next Session
 - Confirm AIRY HTTP endpoints with device manual; then set `http_enabled:=true` in launch. Update `http.endpoints.*` if paths/methods differ.
@@ -64,6 +66,8 @@ This running log captures progress and decisions to help resume quickly.
   - Implemented `alpha_observability/slo_publisher`: subscribes to `/alpha/metrics/*_latency_ms`, computes P95, publishes `DiagnosticArray` to `/alpha/observability/slo`, and emits `SLO_BREACH` events against thresholds in `degrade_policies.yaml`.
 - Time Sync:
   - Added `alpha_time_sync` preflight gate node exposing `/alpha/time_sync/preflight_gate` and `/alpha/time_sync/status` (skeleton, `always_ok` param).
+- Comms/Degrade:
+  - Added `alpha_comms/degrade_manager`: listens to SLO metrics, escalates/de-escalates through L0→L3, publishes `/alpha/comms/degrade_level`, emits events, and disables MAPPING overlay when level requires it (dry-run by default).
 
 ---
 

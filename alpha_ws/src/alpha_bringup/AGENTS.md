@@ -51,6 +51,9 @@ tests:
     - {id: "bringup-sim", description: "Sim runs through sequence"}
 notes: >
   Owns the startup sequencer and config manager; sets LiDARs to RUN, waits 10s, starts mapping.
+
+## Change & Decision Log
+- 2025-08-30: Added config_manager and startup_sequencer nodes; added startup.launch.py.
 ---
 
 # AGENT — alpha_bringup

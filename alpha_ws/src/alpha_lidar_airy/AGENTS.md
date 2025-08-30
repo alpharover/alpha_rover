@@ -58,6 +58,9 @@ tests:
     - {id: "lidar-unit", description: "Row reorder unit tests"}
 notes: >
   Provides AIRY HTTP op-mode handling (OpM 0/1) and organized-cloud row reordering.
+
+## Change & Decision Log
+- 2025-08-30: Initial C++ nodes added: reorder_node and mode_service_node (HTTP dry-run).
 ---
 
 # AGENT — alpha_lidar_airy

@@ -50,5 +50,20 @@ def generate_launch_description():
             parameters=[{'config': 'alpha_configs/lidar_airy.yaml'}],
             output='screen',
         ),
-    ])
 
+        # Mode manager (skeleton)
+        Node(
+            package='alpha_mode_manager',
+            executable='mode_manager',
+            name='alpha_mode_manager',
+            output='screen',
+        ),
+
+        # Orchestrator (skeleton)
+        Node(
+            package='alpha_orchestrator',
+            executable='orchestrator',
+            name='alpha_orchestrator',
+            output='screen',
+        ),
+    ])

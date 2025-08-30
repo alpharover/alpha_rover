@@ -140,4 +140,20 @@ def generate_launch_description():
             }],
             output='screen',
         ),
+
+
+        # Latency feeders (placeholder samplers)
+        Node(
+            package='alpha_observability',
+            executable='latency_feeders',
+            name='alpha_latency_feeders',
+            parameters=[{
+                'map_from_lidar': True,
+                'map_source_topic': '/alpha/lidar/front/points',
+                'cmd_static_ms': 30.0,
+                'video_static_ms': 90.0,
+                'publish_period_sec': 1.0,
+            }],
+            output='screen',
+        ),
 ])

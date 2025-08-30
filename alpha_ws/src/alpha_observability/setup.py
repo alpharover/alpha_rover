@@ -19,7 +19,7 @@ setup(
     entry_points={
         'console_scripts': [
             'slo_publisher = alpha_observability.slo_publisher:main',
+            'latency_feeders = alpha_observability.latency_feeders:main',
         ],
     },
 )
-

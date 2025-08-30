@@ -61,9 +61,11 @@ This running log captures progress and decisions to help resume quickly.
   - Handles `/alpha/orchestrator/cmd` actions `e_stop`, `resume`, `recover_perception`.
   - Executes config-driven recovery lists (e.g., `perception.recovery.vslam_lost`); issues ModeSet to `FAILSAFE` when specified (dry-run by default), other actions reported via events.
   - Launch now passes `config_failure_domains` and `dry_run`.
+  - Subscribes to `/alpha/comms/degrade_level`; maps L0→OK, L1/L2→DEGRADED, L3→FAILED for `comms` and publishes `/alpha/health` snapshots.
 - Config validation: added schema for `failure_domains.yaml`.
 - Observability:
   - Implemented `alpha_observability/slo_publisher`: subscribes to `/alpha/metrics/*_latency_ms`, computes P95, publishes `DiagnosticArray` to `/alpha/observability/slo`, and emits `SLO_BREACH` events against thresholds in `degrade_policies.yaml`.
+  - Added `alpha_observability/latency_feeders` for placeholder latency metrics; configurable sources.
 - Time Sync:
   - Added `alpha_time_sync` preflight gate node exposing `/alpha/time_sync/preflight_gate` and `/alpha/time_sync/status` (skeleton, `always_ok` param).
 - Comms/Degrade:

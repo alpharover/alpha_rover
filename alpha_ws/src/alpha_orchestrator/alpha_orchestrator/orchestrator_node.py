@@ -5,7 +5,7 @@ from rclpy.qos import QoSProfile
 from std_msgs.msg import String
 from std_srvs.srv import Trigger
 from alpha_utils.srv import OrchestratorCommand, ModeSet
-from alpha_utils.msg import Event, Health
+from alpha_utils.msg import Event, Health, DomainHealth
 
 
 class Orchestrator(Node):
@@ -23,6 +23,8 @@ class Orchestrator(Node):
         self.srv = self.create_service(OrchestratorCommand, '/alpha/orchestrator/cmd', self.on_cmd)
         self.events_pub = self.create_publisher(Event, '/alpha/events', 10)
         self.health_sub = self.create_subscription(Health, '/alpha/health', self.on_health, QoSProfile(depth=10))
+        self.health_pub = self.create_publisher(Health, '/alpha/health', 10)
+        self.sub_degrade = self.create_subscription(String, '/alpha/comms/degrade_level', self.on_degrade, 10)
         self.cli_modeset = self.create_client(ModeSet, '/alpha/mode/set')
         self.cli_e_stop = self.create_client(Trigger, '/alpha/motion/e_stop')
         self.cli_resume = self.create_client(Trigger, '/alpha/motion/resume')
@@ -53,6 +55,29 @@ class Orchestrator(Node):
             self._last_health[d.domain] = d.status
         for dom, status in changed:
             self.publish_event('DOMAIN_HEALTH', f'{dom}:{status}')
+
+    def on_degrade(self, msg: String):
+        lvl = (msg.data or '').strip().upper()
+        status = DomainHealth.OK
+        if lvl in ('L1', 'L2'):
+            status = DomainHealth.DEGRADED
+        elif lvl == 'L3':
+            status = DomainHealth.FAILED
+        dh = DomainHealth()
+        dh.domain = 'comms'
+        dh.status = status
+        dh.reason = f'degrade:{lvl}'
+        self._last_health['comms'] = status
+        h = Health()
+        h.domains = []
+        for k, v in self._last_health.items():
+            d = DomainHealth()
+            d.domain = k
+            d.status = v
+            d.reason = ''
+            h.domains.append(d)
+        self.health_pub.publish(h)
+        self.publish_event('DOMAIN_HEALTH', f'comms:{status}')
 
     def on_cmd(self, req: OrchestratorCommand.Request, resp: OrchestratorCommand.Response):
         action = (req.action or '').strip().lower()

@@ -1,0 +1,15 @@
+base: TELEOP
+overlays:
+  - NIGHT
+  - LOW_POWER
+  - MAPPING
+exclusive:
+  - FAILSAFE
+  - DOCKING
+  - RTH_TOPO
+guards:
+  enter_mapping:
+    require_services:
+      - /alpha/time_sync/preflight_gate
+      - /alpha_calibration_tools/tf_ok
+

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "modes",
+  "type": "object",
+  "properties": {
+    "base": { "type": "string" },
+    "overlays": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "exclusive": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "guards": {
+      "type": "object",
+      "properties": {
+        "enter_mapping": {
+          "type": "object",
+          "properties": {
+            "require_services": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": ["base", "overlays", "exclusive"],
+  "additionalProperties": true
+}
+

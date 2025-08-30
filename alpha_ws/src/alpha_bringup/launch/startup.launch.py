@@ -60,6 +60,10 @@ def generate_launch_description():
             package='alpha_mode_manager',
             executable='mode_manager',
             name='alpha_mode_manager',
+            parameters=[{
+                'modes_config': 'alpha_configs/modes.yaml',
+                'enforce_guards': True,
+            }],
             output='screen',
         ),
 

@@ -30,6 +30,15 @@ This running log captures progress and decisions to help resume quickly.
   - Added minimal C++ `nvblox` dummy node subscribing to `/alpha/lidar/{front,rear}/points` to scaffold provider wiring.
   - Build target: `alpha_mapping:nvblox`. Not auto-started; keep startup sequencing policy for later.
 
+- alpha_mode_manager:
+  - Upgraded Python node to read `alpha_configs/modes.yaml` (base mode, overlays, exclusive list).
+  - Added guard checks for entering `MAPPING` overlay via `/alpha/time_sync/preflight_gate` and `/alpha_calibration_tools/tf_ok` (std_srvs/Trigger), controlled by `enforce_guards`.
+  - Clears overlays on exclusive base modes (`FAILSAFE`, `DOCKING`, `RTH_TOPO`). Publishes state every second and immediately on change.
+  - Launch now passes `modes_config` and `enforce_guards`.
+
+- Config validation:
+  - ConfigManager validates YAMLs against JSON Schemas when present (added schemas for `lidar_airy`, `network`, `modes`).
+
 ### Open Items / Next Session
 - Confirm AIRY HTTP endpoints with device manual; then set `http_enabled:=true` in launch. Update `http.endpoints.*` if paths/methods differ.
 - Ensure LiDAR drivers publish `/alpha/lidar/*/points_raw` (or update reorder inputs) and validate dims=96x900.

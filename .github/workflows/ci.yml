@@ -7,6 +7,25 @@ on:
     branches: [ trunk, main, '**' ]
 
 jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-22.04
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filters: |
+            code:
+              - 'alpha_ws/**'
+              - 'alpha_configs/**'
+              - 'scripts/**'
+              - 'deploy/**'
+              - '.github/workflows/ci.yml'
+              - '!**/*.md'
   docs:
     name: Docs Validation
     runs-on: ubuntu-22.04
@@ -25,6 +44,8 @@ jobs:
   build:
     name: ROS 2 Build (Humble)
     runs-on: ubuntu-22.04
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     env:
       ALPHA_WS: alpha_ws
       PKG_TARGET: ""

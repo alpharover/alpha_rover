@@ -13,6 +13,8 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from std_msgs.msg import String
 from alpha_utils.srv import TriggerRecord
+import hashlib
+import json
 
 
 def _now_str() -> str:
@@ -148,6 +150,12 @@ class RingRecorder(Node):
                     proc.wait(timeout=5)
                 except Exception:
                     proc.kill()
+                # After capture, write metadata.json
+                try:
+                    meta = self._collect_metadata(bag_id, reason)
+                    (dest / 'metadata.json').write_text(json.dumps(meta, indent=2))
+                except Exception as me:
+                    self.get_logger().warn(f'metadata write failed: {me}')
             except Exception as e:
                 self.get_logger().error(f'post-capture failed: {e}')
 
@@ -157,6 +165,37 @@ class RingRecorder(Node):
         resp.message = 'ok'
         self._status(f'TRIGGERED:{bag_id}')
         return resp
+
+    def _sha256_file(self, path: Path) -> str:
+        try:
+            h = hashlib.sha256()
+            with open(path, 'rb') as f:
+                for chunk in iter(lambda: f.read(8192), b''):
+                    h.update(chunk)
+            return h.hexdigest()
+        except Exception:
+            return ''
+
+    def _collect_metadata(self, bag_id: str, reason: str) -> dict:
+        meta = {
+            'bag_id': bag_id,
+            'reason': reason,
+            'time_utc': _now_str(),
+        }
+        # Git SHA (best-effort)
+        try:
+            sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=str(Path.cwd()), text=True).strip()
+            meta['git_sha'] = sha
+        except Exception:
+            meta['git_sha'] = ''
+        # Config hashes (best-effort)
+        cfg_root = Path('alpha_configs')
+        cfgs = ['lidar_airy.yaml', 'mapping_provider.yaml', 'modes.yaml', 'calibration_bounds.yaml', 'degrade_policies.yaml', 'network.yaml']
+        meta['config_hashes'] = {}
+        for c in cfgs:
+            p = cfg_root / c
+            meta['config_hashes'][c] = self._sha256_file(p) if p.exists() else ''
+        return meta
 
 
 def main(args=None):
@@ -169,4 +208,3 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
-

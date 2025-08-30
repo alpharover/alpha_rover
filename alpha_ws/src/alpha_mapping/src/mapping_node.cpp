@@ -5,7 +5,9 @@
 #include <string>
 #include <vector>
 #include <fstream>
+
 #include <pluginlib/class_loader.hpp>
+#include <std_msgs/msg/string.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -109,6 +111,10 @@ public:
       RCLCPP_INFO(this->get_logger(), "Subscribed to %s", t.c_str());
     }
 
+    status_pub_ = this->create_publisher<std_msgs::msg::String>("/alpha/mapping/status", 10);
+    std_msgs::msg::String st;
+    st.data = std::string("STARTED ") + provider;
+    status_pub_->publish(st);
     RCLCPP_INFO(this->get_logger(), "Mapping node started with provider: %s", provider.c_str());
   }
 
@@ -116,6 +122,7 @@ private:
   std::unique_ptr<IMappingProvider> provider_;
   std::vector<rclcpp::Subscription<PointCloud2>::SharedPtr> subs_;
   std::shared_ptr<pluginlib::ClassLoader<IMappingProvider>> loader_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr status_pub_;
 };
 
 } // namespace alpha_mapping

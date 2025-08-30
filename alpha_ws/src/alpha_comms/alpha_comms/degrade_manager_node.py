@@ -7,7 +7,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 from std_msgs.msg import String
-from alpha_utils.msg import Event
+from alpha_utils.msg import Event, DegradeBudget
 from alpha_utils.srv import ModeSet
 
 
@@ -30,6 +30,7 @@ class DegradeManager(Node):
         qos = QoSProfile(depth=10)
         self.sub = self.create_subscription(DiagnosticArray, '/alpha/observability/slo', self.on_slo, qos)
         self.pub_level = self.create_publisher(String, '/alpha/comms/degrade_level', 10)
+        self.pub_budget = self.create_publisher(DegradeBudget, '/alpha/comms/budget_intent', 10)
         self.events_pub = self.create_publisher(Event, '/alpha/events', 10)
         self.cli_modeset = self.create_client(ModeSet, '/alpha/mode/set')
         self.timer = self.create_timer(1.0, self._tick)
@@ -86,6 +87,17 @@ class DegradeManager(Node):
         mapping_on = bool(lvl_cfg.get('mapping', True))
         if not mapping_on and self.get_parameter('manage_mapping_overlay').get_parameter_value().bool_value:
             self._ensure_mapping_overlay(False)
+        # Publish budget intent
+        try:
+            msg = DegradeBudget()
+            msg.level = new_level
+            msg.video_fps = int(lvl_cfg.get('video_fps', -1))
+            msg.video_bitrate = int(lvl_cfg.get('video_bitrate', -1))
+            msg.lidar_hz = int(lvl_cfg.get('lidar_hz', -1))
+            msg.mapping = bool(lvl_cfg.get('mapping', True))
+            self.pub_budget.publish(msg)
+        except Exception:
+            pass
 
     def _ensure_mapping_overlay(self, enable: bool):
         dry_run = self.get_parameter('dry_run').get_parameter_value().bool_value
@@ -123,4 +135,3 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
-

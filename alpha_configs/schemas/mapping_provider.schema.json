@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "mapping_provider",
+  "type": "object",
+  "properties": {
+    "provider": { "type": "string" },
+    "tsdf_voxel": { "type": "number", "minimum": 0.01 },
+    "esdf_enabled": { "type": "boolean" },
+    "input_topics": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "lidar_dims": {
+      "type": "object",
+      "properties": {
+        "height": { "type": "integer", "minimum": 1 },
+        "width": { "type": "integer", "minimum": 1 }
+      },
+      "required": ["height", "width"],
+      "additionalProperties": false
+    },
+    "fov": {
+      "type": "object",
+      "properties": {
+        "min_angle_below_zero_elevation_rad": { "type": "number" },
+        "max_angle_above_zero_elevation_rad": { "type": "number" }
+      },
+      "required": ["min_angle_below_zero_elevation_rad", "max_angle_above_zero_elevation_rad"],
+      "additionalProperties": true
+    },
+    "range_m": {
+      "type": "object",
+      "properties": {
+        "min": { "type": "number", "minimum": 0 },
+        "max": { "type": "number", "minimum": 0 }
+      },
+      "required": ["min", "max"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["provider", "input_topics", "lidar_dims"],
+  "additionalProperties": true
+}
+

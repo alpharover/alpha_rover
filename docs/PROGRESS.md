@@ -70,6 +70,7 @@ This running log captures progress and decisions to help resume quickly.
   - Added `alpha_time_sync` preflight gate node exposing `/alpha/time_sync/preflight_gate` and `/alpha/time_sync/status` (skeleton, `always_ok` param).
 - Comms/Degrade:
   - Added `alpha_comms/degrade_manager`: listens to SLO metrics, escalates/de-escalates through L0→L3, publishes `/alpha/comms/degrade_level`, emits events, and disables MAPPING overlay when level requires it (dry-run by default).
+  - Publishes `/alpha/comms/budget_intent` (DegradeBudget) with `video_fps`, `video_bitrate`, `lidar_hz`, `mapping`. Video budget applier publishes `/alpha/video/target_*`. LiDAR reorder subscribes and throttles output to target Hz.
 
 ---
 

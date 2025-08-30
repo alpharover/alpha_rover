@@ -252,6 +252,7 @@ This repo maintains a **chain of `AGENTS.md` files** so a new agent (human or LL
 - Template: `docs/AGENTS_TEMPLATE.md`
 - Style: `docs/AGENTS_STYLE.md`
 - Index (generated): `docs/AGENTS_INDEX.md`
+- UI parameters (brainstorming): `docs/ui_parameters.md`
 - Scripts:
   ```bash
   python3 scripts/agents_validate.py .         # validate front-matter
@@ -319,4 +320,3 @@ See [`LICENSE`](./LICENSE) for the full text. Contributions are accepted under t
 ### Contributing & Conduct
 - See `CONTRIBUTING.md` for workflow, branching, and code style.
 - See `CODE_OF_CONDUCT.md` for expected behavior and reporting.
-

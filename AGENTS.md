@@ -11,6 +11,7 @@ links:
   readme: "./README.md"
   docs: "./docs"
   progress: "./docs/PROGRESS.md"
+  ui_parameters: "./docs/ui_parameters.md"
 dependencies:
   internal: ["alpha_utils","alpha_bringup","alpha_lidar_airy","alpha_mapping","alpha_observability","alpha_ui_api"]
   external: ["isaac_ros_nvblox","isaac_ros_apriltag","ros2_tracing","linuxptp"]
@@ -46,6 +47,7 @@ tests:
     - {id: "agents-validate", description: "Validate AGENTS front-matter schema"}
 notes: >
   Start here. Use docs/AGENTS_INDEX.md to navigate per-component docs.
+  UI parameter candidates for future UI work are being collected in docs/ui_parameters.md.
 
 ## Change & Decision Log
 - 2025-08-30: Created trunk baseline and legacy branch/worktree. Scaffolding added for utils, bringup, LiDAR (C++), mapping skeleton, observability, mode manager, orchestrator; CI enabled; bringup launch added.

@@ -17,6 +17,7 @@ This running log captures progress and decisions to help resume quickly.
   - CI: GitHub Actions for docs validation + ROS 2 Humble build.
 - Launch:
   - `alpha_bringup/launch/startup.launch.py` starts config manager, sequencer, lidar nodes, mode manager, orchestrator.
+  - Added time sync preflight gate and SLO publisher to launch.
 
 - alpha_lidar_airy:
   - Added Python package with two nodes:
@@ -41,6 +42,7 @@ This running log captures progress and decisions to help resume quickly.
 - Config validation:
   - ConfigManager validates YAMLs against JSON Schemas when present (added schemas for `lidar_airy`, `network`, `modes`).
   - Added schema for `mapping_provider.yaml`.
+  - Added schema for `failure_domains.yaml` and `time_sync.yaml`.
 
 ### Open Items / Next Session
 - Confirm AIRY HTTP endpoints with device manual; then set `http_enabled:=true` in launch. Update `http.endpoints.*` if paths/methods differ.
@@ -57,6 +59,10 @@ This running log captures progress and decisions to help resume quickly.
   - Executes config-driven recovery lists (e.g., `perception.recovery.vslam_lost`); issues ModeSet to `FAILSAFE` when specified (dry-run by default), other actions reported via events.
   - Launch now passes `config_failure_domains` and `dry_run`.
 - Config validation: added schema for `failure_domains.yaml`.
+- Observability:
+  - Implemented `alpha_observability/slo_publisher`: subscribes to `/alpha/metrics/*_latency_ms`, computes P95, publishes `DiagnosticArray` to `/alpha/observability/slo`, and emits `SLO_BREACH` events against thresholds in `degrade_policies.yaml`.
+- Time Sync:
+  - Added `alpha_time_sync` preflight gate node exposing `/alpha/time_sync/preflight_gate` and `/alpha/time_sync/status` (skeleton, `always_ok` param).
 
 ---
 

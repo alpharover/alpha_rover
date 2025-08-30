@@ -55,6 +55,15 @@ def generate_launch_description():
             output='screen',
         ),
 
+        # Time sync preflight gate (skeleton)
+        Node(
+            package='alpha_time_sync',
+            executable='preflight_gate',
+            name='alpha_time_sync_gate',
+            parameters=[{'always_ok': True}],
+            output='screen',
+        ),
+
         # Mode manager (skeleton)
         Node(
             package='alpha_mode_manager',
@@ -75,6 +84,19 @@ def generate_launch_description():
             parameters=[{
                 'config_failure_domains': 'alpha_configs/failure_domains.yaml',
                 'dry_run': True,
+            }],
+            output='screen',
+        ),
+
+        # Observability SLO publisher
+        Node(
+            package='alpha_observability',
+            executable='slo_publisher',
+            name='alpha_slo_publisher',
+            parameters=[{
+                'degrade_config': 'alpha_configs/degrade_policies.yaml',
+                'publish_period_sec': 1.0,
+                'window_size': 200,
             }],
             output='screen',
         ),

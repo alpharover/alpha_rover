@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "time_sync",
+  "type": "object",
+  "properties": {
+    "always_ok": { "type": "boolean" },
+    "max_offset_ms": { "type": "number", "minimum": 0 }
+  },
+  "required": ["always_ok"],
+  "additionalProperties": true
+}
+

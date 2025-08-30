@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'alpha_observability'
+package_name = 'alpha_time_sync'
 
 setup(
     name=package_name,
@@ -14,11 +14,11 @@ setup(
     zip_safe=True,
     maintainer='Alpha SW',
     maintainer_email='devnull@example.com',
-    description='SLO metrics publisher and breach events.',
+    description='Time sync status + preflight gate (skeleton).',
     license='Proprietary',
     entry_points={
         'console_scripts': [
-            'slo_publisher = alpha_observability.slo_publisher:main',
+            'preflight_gate = alpha_time_sync.preflight_gate_node:main',
         ],
     },
 )

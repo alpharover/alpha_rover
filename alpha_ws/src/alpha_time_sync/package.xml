@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>alpha_observability</name>
+  <name>alpha_time_sync</name>
   <version>0.1.0</version>
-  <description>SLO metrics publisher and breach notifier.</description>
+  <description>Time sync status and preflight gate (skeleton).</description>
   <maintainer email="devnull@example.com">Alpha SW</maintainer>
   <license>Proprietary</license>
 
@@ -10,8 +10,7 @@
 
   <exec_depend>rclpy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-  <exec_depend>diagnostic_msgs</exec_depend>
-  <exec_depend>alpha_utils</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
 
   <export>
     <build_type>ament_python</build_type>

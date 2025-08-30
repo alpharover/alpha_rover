@@ -26,6 +26,7 @@ jobs:
               - 'deploy/**'
               - '.github/workflows/ci.yml'
               - '!**/*.md'
+
   docs:
     name: Docs Validation
     runs-on: ubuntu-22.04

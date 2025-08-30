@@ -4,13 +4,14 @@ project(alpha_mapping)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(alpha_utils REQUIRED)
 find_package(pluginlib REQUIRED)
 
 add_executable(nvblox src/nvblox_dummy_node.cpp)
 ament_target_dependencies(nvblox rclcpp sensor_msgs)
 
 add_executable(mapping_node src/mapping_node.cpp)
-ament_target_dependencies(mapping_node rclcpp sensor_msgs)
+ament_target_dependencies(mapping_node rclcpp sensor_msgs alpha_utils)
 
 install(TARGETS nvblox
   DESTINATION lib/${PROJECT_NAME}

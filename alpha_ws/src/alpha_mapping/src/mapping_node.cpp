@@ -8,6 +8,7 @@
 
 #include <pluginlib/class_loader.hpp>
 #include <std_msgs/msg/string.hpp>
+#include "alpha_utils/msg/degrade_budget.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -38,6 +39,11 @@ public:
     auto cfg_path = this->get_parameter("config").as_string();
     // Minimal YAML parsing: look for lines 'provider:' and 'input_topics:'
     std::string provider = "nvblox";
+    double tsdf_voxel = 0.0;
+    bool esdf_enabled = false;
+    int lidar_h = 0, lidar_w = 0;
+    double fov_min = 0.0, fov_max = 0.0;
+    double range_min = 0.0, range_max = 0.0;
     std::vector<std::string> topics;
     std::ifstream f(cfg_path);
     if (f.good()) {
@@ -50,6 +56,40 @@ public:
             // trim spaces
             provider.erase(0, provider.find_first_not_of(" \t"));
           }
+        }
+        if (line.find("tsdf_voxel:") != std::string::npos) {
+          try {
+            tsdf_voxel = std::stod(line.substr(line.find(":") + 1));
+          } catch (...) {}
+        }
+        if (line.find("esdf_enabled:") != std::string::npos) {
+          std::string v = line.substr(line.find(":") + 1);
+          auto start = v.find_first_not_of(" \t");
+          if (start != std::string::npos) v = v.substr(start);
+          esdf_enabled = (v.find("true") != std::string::npos || v.find("True") != std::string::npos || v == "1");
+        }
+        if (line.find("lidar_dims:") != std::string::npos) {
+          // Expect next tokens like { height: 96, width: 900 }
+          auto hpos = line.find("height:");
+          auto wpos = line.find("width:");
+          if (hpos != std::string::npos) {
+            try { lidar_h = std::stoi(line.substr(hpos + 7)); } catch (...) {}
+          }
+          if (wpos != std::string::npos) {
+            try { lidar_w = std::stoi(line.substr(wpos + 6)); } catch (...) {}
+          }
+        }
+        if (line.find("min_angle_below_zero_elevation_rad:") != std::string::npos) {
+          try { fov_min = std::stod(line.substr(line.find(":") + 1)); } catch (...) {}
+        }
+        if (line.find("max_angle_above_zero_elevation_rad:") != std::string::npos) {
+          try { fov_max = std::stod(line.substr(line.find(":") + 1)); } catch (...) {}
+        }
+        if (line.find("range_m:") != std::string::npos) {
+          auto minpos = line.find("min:");
+          auto maxpos = line.find("max:");
+          if (minpos != std::string::npos) { try { range_min = std::stod(line.substr(minpos + 4)); } catch (...) {} }
+          if (maxpos != std::string::npos) { try { range_max = std::stod(line.substr(maxpos + 4)); } catch (...) {} }
         }
         if (line.find("input_topics:") != std::string::npos) {
           // Next line(s) expected YAML list [a, b] or on same line
@@ -105,7 +145,9 @@ public:
     // Subscribe
     for (const auto & t : topics) {
       auto sub = this->create_subscription<PointCloud2>(t, 10, [this, t](PointCloud2::SharedPtr msg) {
-        provider_->integrateCloud(msg, msg->header.frame_id, rclcpp::Time(msg->header.stamp));
+        if (mapping_enabled_) {
+          provider_->integrateCloud(msg, msg->header.frame_id, rclcpp::Time(msg->header.stamp));
+        }
       });
       subs_.push_back(sub);
       RCLCPP_INFO(this->get_logger(), "Subscribed to %s", t.c_str());
@@ -113,9 +155,26 @@ public:
 
     status_pub_ = this->create_publisher<std_msgs::msg::String>("/alpha/mapping/status", 10);
     std_msgs::msg::String st;
-    st.data = std::string("STARTED ") + provider;
+    st.data = std::string("STARTED ") + provider +
+              " tsdf_voxel=" + std::to_string(tsdf_voxel) +
+              " esdf=" + (esdf_enabled ? std::string("true") : std::string("false")) +
+              " dims=" + std::to_string(lidar_h) + "x" + std::to_string(lidar_w);
     status_pub_->publish(st);
     RCLCPP_INFO(this->get_logger(), "Mapping node started with provider: %s", provider.c_str());
+
+    // Subscribe to degrade budget to toggle mapping
+    sub_budget_ = this->create_subscription<alpha_utils::msg::DegradeBudget>(
+      "/alpha/comms/budget_intent", 10,
+      [this](alpha_utils::msg::DegradeBudget::SharedPtr msg){
+        bool en = msg->mapping;
+        if (en != mapping_enabled_) {
+          mapping_enabled_ = en;
+          std_msgs::msg::String s;
+          s.data = std::string("MAPPING_") + (en ? "ENABLED" : "DISABLED");
+          status_pub_->publish(s);
+        }
+      }
+    );
   }
 
 private:
@@ -123,6 +182,8 @@ private:
   std::vector<rclcpp::Subscription<PointCloud2>::SharedPtr> subs_;
   std::shared_ptr<pluginlib::ClassLoader<IMappingProvider>> loader_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr status_pub_;
+  rclcpp::Subscription<alpha_utils::msg::DegradeBudget>::SharedPtr sub_budget_;
+  bool mapping_enabled_ {true};
 };
 
 } // namespace alpha_mapping

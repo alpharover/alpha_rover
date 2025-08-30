@@ -1,0 +1,8 @@
+lidar_spinup_sec: 10
+steps:
+  - set_lidar_mode: { target: both, op_mode: 1 }
+  - wait: { seconds: 10 }
+  - start_node: { package: alpha_mapping, node: nvblox }
+publish_status_topic: /alpha/mapping/startup_status
+status_enums: [WAITING_FOR_LIDAR, SPINNING_UP, STARTED]
+

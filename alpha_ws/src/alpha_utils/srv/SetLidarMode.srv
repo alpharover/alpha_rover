@@ -1,0 +1,9 @@
+# Request
+string target        # "front" | "rear" | "both"
+uint8 op_mode        # 0=STANDBY, 1=RUN
+---
+# Response
+bool accepted
+string message
+alpha_utils/LidarState[] states
+

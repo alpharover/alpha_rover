@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "levels": { "type": "object" },
+    "triggers": {
+      "type": "object",
+      "properties": {
+        "slo_p95_cmd_ms": { "type": "number", "minimum": 1 },
+        "slo_p95_map_ms": { "type": "number", "minimum": 1 },
+        "slo_p95_video_ms": { "type": "number", "minimum": 1 },
+        "rtt_ms": { "type": "array", "items": { "type": "number" } },
+        "loss_pct": { "type": "array", "items": { "type": "number" } }
+      },
+      "required": ["slo_p95_cmd_ms","slo_p95_map_ms","slo_p95_video_ms"]
+    }
+  },
+  "required": ["levels","triggers"]
+}
+

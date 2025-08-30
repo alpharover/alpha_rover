@@ -1,0 +1,7 @@
+# Request
+string action
+---
+# Response
+bool accepted
+string message
+

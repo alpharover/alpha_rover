@@ -1,0 +1,9 @@
+continuous:
+  topics: [/tf, /diagnostics, /alpha/health]
+  retention_sec: 300
+  rate_limit_hz: 10
+triggered:
+  topics: [/* sensors */, /alpha/*/internal_state]
+  pre_sec: 30
+  post_sec: 60
+

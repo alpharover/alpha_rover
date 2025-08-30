@@ -1,0 +1,10 @@
+provider: nvblox
+tsdf_voxel: 0.15
+esdf_enabled: true
+input_topics: [/alpha/lidar/front/points, /alpha/lidar/rear/points]
+lidar_dims: { height: 96, width: 900 }
+fov:
+  min_angle_below_zero_elevation_rad: -0.001
+  max_angle_above_zero_elevation_rad: 1.5707963
+range_m: { min: 0.10, max: 60.0 }
+

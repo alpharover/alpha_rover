@@ -1,0 +1,7 @@
+tag_id: 7
+tag_size_m: 0.16
+approach_m: 2.0
+final_offset_m: 0.15
+yaw_tol_deg: 5
+lat_tol_m: 0.03
+

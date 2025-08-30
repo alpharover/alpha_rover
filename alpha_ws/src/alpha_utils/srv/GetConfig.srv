@@ -1,0 +1,8 @@
+# Request
+string key
+---
+# Response
+bool found
+string yaml
+string message
+

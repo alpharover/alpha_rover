@@ -1,0 +1,7 @@
+warn_c: 80
+shed_c: 85
+actions:
+  - at: warn_c   # UI warning, map rate -25%
+  - at: shed_c   # nvpmodel↓, NVENC bitrate↓, pause mapping
+  - clear: <78C  # resume compute
+

@@ -1,0 +1,12 @@
+levels:
+  L0: {video_fps: 30, video_bitrate: 6000000, lidar_hz: 20, mapping: true}
+  L1: {video_fps: 20, video_bitrate: 3000000, lidar_hz: 15, mapping: true}
+  L2: {video_fps: 10, video_bitrate: 1200000, lidar_hz: 10, mapping: false}
+  L3: {video_fps: 0,  video_bitrate: 0,       lidar_hz: 5,  mapping: false}
+triggers:
+  slo_p95_cmd_ms: 60
+  slo_p95_map_ms: 90
+  slo_p95_video_ms: 120
+  rtt_ms: [80,120,180]
+  loss_pct: [1,5,10]
+

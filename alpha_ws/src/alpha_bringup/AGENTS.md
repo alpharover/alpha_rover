@@ -6,7 +6,7 @@ version: "v0.1"
 updated: "2025-08-30"
 owner: "Alpha SW"
 links:
-  roadmap: "../../ALPHA_Software_Roadmap_v2.3.md"
+  roadmap: "../ALPHA_Software_Roadmap_v2.3.md"
   code: "../alpha_ws/src/alpha_bringup"
   readme: "../alpha_ws/src/alpha_bringup/README.md"
   docs: "../docs"

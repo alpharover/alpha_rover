@@ -1,0 +1,4 @@
+TELEOP:   {min_mbps: 3, max_mbps: 8}
+MAPPING:  {min_mbps: 5, max_mbps: 12}
+RTH_TOPO: {min_mbps: 2, max_mbps: 6}
+

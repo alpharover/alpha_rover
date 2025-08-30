@@ -1,0 +1,8 @@
+# Request
+string reason
+---
+# Response
+bool started
+string bag_id
+string message
+

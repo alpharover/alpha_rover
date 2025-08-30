@@ -1,0 +1,4 @@
+base_to_lidar_front: {pos_mm: 5, yaw_deg: 0.3, pitch_deg: 0.3, roll_deg: 0.3}
+base_to_lidar_rear:  {pos_mm: 5, yaw_deg: 0.3, pitch_deg: 0.3, roll_deg: 0.3}
+base_to_camera:      {pos_mm: 5, yaw_deg: 0.5, pitch_deg: 0.5, roll_deg: 0.5}
+

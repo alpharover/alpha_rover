@@ -1,0 +1,12 @@
+# Request
+string target_base_mode
+string[] enable_overlays
+string[] disable_overlays
+bool clear_overlays
+string reason
+---
+# Response
+bool accepted
+string message
+alpha_utils/ModeState current
+

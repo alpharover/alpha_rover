@@ -49,9 +49,30 @@ jobs:
           set -euxo pipefail
           # Initialize rosdep databases if needed
           sudo rosdep init || true
-          rosdep update
-          # Install all dependencies declared in package.xml files under the workspace
+          # Retry rosdep update in case of transient network hiccups
+          for i in 1 2 3; do
+            if rosdep update; then
+              break
+            fi
+            echo "rosdep update failed (attempt $i). Retrying..."
+            sleep 5
+          done
+          # Attempt to install dependencies from package.xml files
+          set +e
           rosdep install --rosdistro humble --from-paths "$ALPHA_WS" -i -y
+          rc=$?
+          set -e
+          if [ $rc -ne 0 ]; then
+            echo "::warning::rosdep install failed with code $rc. Falling back to apt for common ROS deps."
+            sudo apt-get update
+            sudo apt-get install -y \
+              ros-humble-rosidl-default-generators \
+              ros-humble-rosidl-default-runtime \
+              ros-humble-std-msgs \
+              ros-humble-diagnostic-msgs \
+              ros-humble-rclpy \
+              python3-yaml || true
+          fi
       - name: Build
         shell: bash
         run: |

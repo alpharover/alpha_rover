@@ -1,0 +1,21 @@
+# Workspace build artifacts
+alpha_ws/build/
+alpha_ws/install/
+alpha_ws/log/
+
+# Runtime artifacts
+logs/
+run/
+*.log
+*.pid
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Editors/OS
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/

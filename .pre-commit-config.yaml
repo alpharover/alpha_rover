@@ -1,0 +1,13 @@
+repos:
+- repo: local
+  hooks:
+    - id: agents-validate
+      name: agents-validate
+      entry: python3 scripts/agents_validate.py .
+      language: system
+      pass_filenames: false
+    - id: agents-index
+      name: agents-index
+      entry: python3 scripts/agents_index.py . docs/AGENTS_INDEX.md
+      language: system
+      pass_filenames: false

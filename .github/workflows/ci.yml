@@ -40,6 +40,7 @@ jobs:
             ros-humble-ros-base \
             python3-colcon-common-extensions \
             ros-dev-tools \
+            python3-rosdep \
             libyaml-cpp-dev \
             libcurl4-openssl-dev
       - name: Resolve ROS package deps (rosdep)

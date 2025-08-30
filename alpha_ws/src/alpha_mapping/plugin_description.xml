@@ -1,0 +1,8 @@
+<library path="nvblox_provider">
+  <class name="alpha_mapping/NvbloxProvider"
+         type="alpha_mapping::NvbloxProvider"
+         base_class_type="alpha_mapping::IMappingProvider">
+    <description>Placeholder NVBlox provider implementing IMappingProvider.</description>
+  </class>
+</library>
+

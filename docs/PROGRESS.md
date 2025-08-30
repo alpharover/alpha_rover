@@ -31,7 +31,8 @@ This running log captures progress and decisions to help resume quickly.
   - Added minimal C++ `nvblox` dummy node subscribing to `/alpha/lidar/{front,rear}/points` to scaffold provider wiring.
   - Added `mapping_node` that reads `mapping_provider.yaml`, subscribes to configured LiDAR topics, and routes clouds to a dummy provider (implements `IMappingProvider`).
   - Startup sequence now launches `alpha_mapping mapping_node` after LiDAR spin-up.
-  - Build targets: `alpha_mapping:nvblox`, `alpha_mapping:mapping_node`.
+  - Added pluginlib-based provider loading; implemented placeholder `NvbloxProvider` plugin and description. `mapping_node` tries `alpha_mapping/NvbloxProvider` then falls back to Dummy.
+  - Build targets: `alpha_mapping:nvblox`, `alpha_mapping:mapping_node`, `alpha_mapping:nvblox_provider`.
 
 - alpha_mode_manager:
   - Upgraded Python node to read `alpha_configs/modes.yaml` (base mode, overlays, exclusive list).

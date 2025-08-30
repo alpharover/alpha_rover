@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <pluginlib/class_loader.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -31,6 +32,7 @@ class MappingNode : public rclcpp::Node {
 public:
   MappingNode() : rclcpp::Node("alpha_mapping_node") {
     this->declare_parameter<std::string>("config", "alpha_configs/mapping_provider.yaml");
+    this->declare_parameter<std::string>("provider_plugin", "alpha_mapping/NvbloxProvider");
     auto cfg_path = this->get_parameter("config").as_string();
     // Minimal YAML parsing: look for lines 'provider:' and 'input_topics:'
     std::string provider = "nvblox";
@@ -85,9 +87,18 @@ public:
       topics = {"/alpha/lidar/front/points", "/alpha/lidar/rear/points"};
     }
 
-    // Load provider (for now, always DummyProvider)
-    provider_.reset(new DummyProvider());
-    provider_->configure(this);
+    // Load provider via pluginlib if available; fallback to DummyProvider
+    std::string plugin_name = this->get_parameter("provider_plugin").as_string();
+    try {
+      loader_ = std::make_shared<pluginlib::ClassLoader<IMappingProvider>>("alpha_mapping", "alpha_mapping::IMappingProvider");
+      provider_.reset(loader_->createSharedInstance(plugin_name));
+      provider_->configure(this);
+      RCLCPP_INFO(this->get_logger(), "Loaded provider plugin: %s", plugin_name.c_str());
+    } catch (const std::exception &e) {
+      RCLCPP_WARN(this->get_logger(), "Failed to load provider plugin '%s': %s. Using DummyProvider.", plugin_name.c_str(), e.what());
+      provider_.reset(new DummyProvider());
+      provider_->configure(this);
+    }
 
     // Subscribe
     for (const auto & t : topics) {
@@ -104,6 +115,7 @@ public:
 private:
   std::unique_ptr<IMappingProvider> provider_;
   std::vector<rclcpp::Subscription<PointCloud2>::SharedPtr> subs_;
+  std::shared_ptr<pluginlib::ClassLoader<IMappingProvider>> loader_;
 };
 
 } // namespace alpha_mapping
@@ -115,4 +127,3 @@ int main(int argc, char ** argv) {
   rclcpp::shutdown();
   return 0;
 }
-

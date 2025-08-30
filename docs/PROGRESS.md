@@ -79,3 +79,8 @@ Artifacts and decisions are linked from AGENTS docs where relevant.
 - Recorder:
   - Added `alpha_recorder/ring_recorder`: manages rotating rosbag2 ring (`--max-bag-duration`), trims to retention window, serves `/alpha/recorder/trigger` to gather pre-window segments and capture post-window into a new bag dir under `data/triggers/`.
   - Status on `/alpha/recorder/status`.
+
+## 2025-09-01
+- CI now builds/tests all packages and adds a `tf_ok` enforcement unit test (roadmap 10.6 — Calibration tools + TF preflight/CI).
+- Added `alpha_configs/extrinsics_current.yaml` for calibration (roadmap 7.13 — extrinsics_seed.yaml).
+- Integrated `video_controller` and wired into launch (roadmap 10.3 — Comms Manager + budgets + impairment harness in CI).

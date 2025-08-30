@@ -1,4 +1,4 @@
-vertical_angle_table_path: /etc/alpha/lidar/airy_vertical_angles.csv
+vertical_angle_table_path: airy_vertical_angles.csv
 reorder_enabled: true
 log_table_hash: true
 expected_dims: { height: 96, width: 900 }
@@ -7,3 +7,17 @@ fov:
   max_angle_above_zero_elevation_rad: 1.5707963
 range_m: { min: 0.10, max: 60.0 }
 
+# HTTP endpoint config for AIRY op-mode control (confirm against device docs)
+http:
+  endpoints:
+    run:
+      method: POST
+      path: "/api/operation_mode"
+      body: '{"mode": 1}'
+      headers: { Content-Type: application/json }
+    standby:
+      method: POST
+      path: "/api/operation_mode"
+      body: '{"mode": 0}'
+      headers: { Content-Type: application/json }
+  timeout_sec: 1.0

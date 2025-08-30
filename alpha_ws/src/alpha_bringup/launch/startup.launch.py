@@ -47,7 +47,11 @@ def generate_launch_description():
             package='alpha_lidar_airy',
             executable='reorder_node',
             name='alpha_airy_reorder',
-            parameters=[{'config': 'alpha_configs/lidar_airy.yaml'}],
+            parameters=[{
+                'config': 'alpha_configs/lidar_airy.yaml',
+                'input_front_topic': '/alpha/lidar/front/points_raw',
+                'input_rear_topic': '/alpha/lidar/rear/points_raw',
+            }],
             output='screen',
         ),
 

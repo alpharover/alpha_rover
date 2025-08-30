@@ -1,19 +1,21 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>alpha_mapping</name>
+  <name>alpha_lidar_airy</name>
   <version>0.1.0</version>
-  <description>Mapping provider interface and plugins for ALPHA (skeleton).</description>
+  <description>RoboSense AIRY LiDAR integration: op-mode HTTP service and organized-cloud row reorder (skeleton).</description>
   <maintainer email="devnull@example.com">Alpha SW</maintainer>
   <license>Proprietary</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <build_depend>rclcpp</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  
-  <exec_depend>rclcpp</exec_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>alpha_utils</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
   </export>
 </package>
+

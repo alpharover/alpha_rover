@@ -1,0 +1,12 @@
+# Placeholder A/B compose (active A -> deploy B)
+version: '3.8'
+services:
+  alpha_core:
+    image: ghcr.io/alpharover/alpha_core:latest
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      - ALPHA_CONFIG_DIR=/alpha/alpha_configs
+    volumes:
+      - ../alpha_configs:/alpha/alpha_configs:ro
+

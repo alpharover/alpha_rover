@@ -42,6 +42,11 @@ class RingRecorder(Node):
 
         self.status_pub = self.create_publisher(String, '/alpha/recorder/status', QoSProfile(depth=10))
         self.srv = self.create_service(TriggerRecord, '/alpha/recorder/trigger', self.on_trigger)
+        # Optional status inputs for metadata enrichment
+        self._time_sync_status = ''
+        self._degrade_level = ''
+        self.create_subscription(String, '/alpha/time_sync/status', self._on_time_sync, 10)
+        self.create_subscription(String, '/alpha/comms/degrade_level', self._on_degrade, 10)
 
         self.ring_proc = None
         self._ensure_ring_running()
@@ -114,6 +119,12 @@ class RingRecorder(Node):
     def _tick(self):
         self._ensure_ring_running()
         self._trim_ring()
+
+    def _on_time_sync(self, msg: String):
+        self._time_sync_status = msg.data or ''
+
+    def _on_degrade(self, msg: String):
+        self._degrade_level = msg.data or ''
 
     def on_trigger(self, req: TriggerRecord.Request, resp: TriggerRecord.Response):
         reason = req.reason or 'manual'
@@ -195,6 +206,8 @@ class RingRecorder(Node):
         for c in cfgs:
             p = cfg_root / c
             meta['config_hashes'][c] = self._sha256_file(p) if p.exists() else ''
+        meta['time_sync_status'] = self._time_sync_status
+        meta['degrade_level'] = self._degrade_level
         return meta
 
 

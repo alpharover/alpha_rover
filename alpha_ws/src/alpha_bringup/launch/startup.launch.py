@@ -61,7 +61,14 @@ def generate_launch_description():
             package='alpha_time_sync',
             executable='preflight_gate',
             name='alpha_time_sync_gate',
-            parameters=[{'always_ok': True}],
+            parameters=[{
+                'always_ok': True,
+                'enforce': False,
+                'bounds_config': 'alpha_configs/calibration_bounds.yaml',
+                'nominal_extrinsics': 'alpha_configs/extrinsics_seed.yaml',
+                'current_extrinsics': 'alpha_configs/extrinsics_current.yaml',
+                'compare_from_config': True,
+            }],
             output='screen',
         ),
 
@@ -70,7 +77,14 @@ def generate_launch_description():
             package='alpha_calibration_tools',
             executable='tf_ok',
             name='alpha_tf_ok',
-            parameters=[{'always_ok': True}],
+            parameters=[{
+                'always_ok': True,
+                'enforce': False,
+                'bounds_config': 'alpha_configs/calibration_bounds.yaml',
+                'nominal_extrinsics': 'alpha_configs/extrinsics_seed.yaml',
+                'current_extrinsics': 'alpha_configs/extrinsics_current.yaml',
+                'compare_from_config': True,
+            }],
             output='screen',
         ),
 

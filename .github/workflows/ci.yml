@@ -39,7 +39,13 @@ jobs:
           sudo apt-get install -y \
             ros-humble-ros-base \
             python3-colcon-common-extensions \
+            python3-colcon-ros \
             ros-dev-tools \
+            build-essential \
+            cmake \
+            python3-setuptools \
+            python3-pip \
+            python3-wheel \
             python3-rosdep \
             libyaml-cpp-dev \
             libcurl4-openssl-dev

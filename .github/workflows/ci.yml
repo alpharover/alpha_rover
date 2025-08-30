@@ -81,11 +81,10 @@ jobs:
               python3-yaml || true
           fi
       - name: Show discovered packages
+        continue-on-error: true
         shell: bash
         run: |
-          set -euo pipefail
-          source /opt/ros/humble/setup.bash
-          cd "$ALPHA_WS"
+          cd "$ALPHA_WS" || exit 0
           colcon list || true
       - name: Build (packages-up-to ${{ env.PKG_TARGET }})
         shell: bash

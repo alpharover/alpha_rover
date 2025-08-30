@@ -5,7 +5,7 @@ This running log captures progress and decisions to help resume quickly.
 ## 2025-08-30
 - Repo baseline prepared:
   - Created `trunk` empty baseline and `legacy-2025-08` worktree + tag `legacy-pre-arch-2025-08`.
-  - Home cleanup and symlink normalization (`ros2_ws -> alpha_ws`).
+  - Home cleanup: established `alpha_ws` as the canonical workspace.
 - Scaffolding:
   - Added agents doc kit; seeded AGENTS; wired index + validation.
   - Added `alpha_utils` (msgs/srvs) and `alpha_bringup` (config manager + startup sequencer).

@@ -25,6 +25,8 @@ jobs:
   build:
     name: ROS 2 Build (Humble)
     runs-on: ubuntu-22.04
+    env:
+      ALPHA_WS: alpha_ws
     steps:
       - uses: actions/checkout@v4
       - name: Setup ROS 2 apt sources
@@ -45,11 +47,11 @@ jobs:
         run: |
           set -euo pipefail
           source /opt/ros/humble/setup.bash
-          colcon build --base-paths alpha_ws --merge-install --cmake-args -DCMAKE_BUILD_TYPE=Release --event-handlers console_cohesion+
+          colcon build --base-paths "$ALPHA_WS" --merge-install --cmake-args -DCMAKE_BUILD_TYPE=Release --event-handlers console_cohesion+
       - name: Test
         shell: bash
         run: |
           set -euo pipefail
           source /opt/ros/humble/setup.bash
-          colcon test --base-paths alpha_ws --merge-install --event-handlers console_cohesion+ --event-handlers github_actions
+          colcon test --base-paths "$ALPHA_WS" --merge-install --event-handlers console_cohesion+ --event-handlers github_actions
           colcon test-result --verbose

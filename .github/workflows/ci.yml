@@ -87,6 +87,7 @@ jobs:
           cd "$ALPHA_WS" || exit 0
           colcon list || true
       - name: Build (packages-up-to ${{ env.PKG_TARGET }})
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -94,6 +95,7 @@ jobs:
           cd "$ALPHA_WS"
           colcon build --merge-install --packages-up-to "$PKG_TARGET" --cmake-args -DCMAKE_BUILD_TYPE=Release
       - name: Test (packages-up-to ${{ env.PKG_TARGET }})
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail

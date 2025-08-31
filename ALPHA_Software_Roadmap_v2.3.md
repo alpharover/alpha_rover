@@ -376,6 +376,23 @@ public:
 **Deliverables (additions):** AIRY vertical‑angle reorder filter; NVBlox set to `lidar_height=96`, `lidar_width=900`, FOV `[-0.001, 1.5707963]` rad; range gate `[0.10,60.0]` m; startup sequencer: set LiDARs **RUN**, wait **10 s**, then start NVBlox.  
 **Acceptance (additions):** Reorder validated against angle table; NVBlox receives 96×900; out‑of‑range points dropped; mapping starts only after spin‑up delay; mapping stability unchanged vs v2.2.
 
+### Phase 8a — Sensor Drivers Online
+**Objective:** Bring AIRY LiDAR and OAK camera drivers online with canonical topics, health checks, and startup gates.
+
+**Acceptance:**
+- AIRY LiDAR (front/rear) publish `/alpha/lidar/{front,rear}/points` at expected dims 96×900, skew ≤ 20 ms, stable rate.
+- OAK cameras (front/rear) publish `/alpha/cam/{front,rear}/image_color` and `/camera_info` at 720p30 (or configured), camera_info sane. UI/stream pipeline targets P95 latency ≤ 120 ms.
+- Mapping provider is gated until LiDAR OK; VSLAM gated until camera OK + time sync.
+
+**External Packages & Dependencies (pins):**
+| Package | Use | Install Target | Version Pin | Canonical Topics | Acceptance |
+|---|---|---|---|---|---|
+| rslidar_sdk (+ rslidar_msg) | AIRY LiDAR driver | Host (source) | Commit SHA | `/alpha/lidar/{front,rear}/points_raw` → reorder → `/points` | dims=96×900; skew ≤20 ms |
+| depthai-ros | OAK camera driver | Host (apt) | apt version | `/alpha/cam/{front,rear}/image_color`, `/camera_info` | camera_info sane; FPS stable; UI P95≤120 ms |
+| isaac_ros_nvblox | Mapping (ESDF/mesh) | Container | Image digest | provider contract topics | FPS target met; provider swap OK |
+| isaac_ros_visual_slam | Visual SLAM | Container | Image digest | `/alpha/vslam/odom` + TF | repeatability tolerance OK |
+
+
 ### Phase 9 — Navigation: Teach‑&‑Repeat / Topological RTH
 **Deliverables:** path recorder, graph builder, topo follower; `/start_record` `/stop_record` `/go_home`.  
 **Acceptance:** 8/10 returns within 0.5 m / ±10° on 50 m dynamic route.

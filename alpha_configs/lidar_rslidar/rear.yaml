@@ -1,0 +1,25 @@
+common:
+  msg_source: 1                 # 0: packet rosbag; 1: online lidar
+  send_point_cloud_ros: true
+  send_packet_ros: false
+  point_type: XYZIRT
+
+lidar:
+  - driver:
+      lidar_type: RSAIRY
+      msop_port: 6700
+      difop_port: 7789
+      imu_port: 0
+      host_address: 192.168.1.10
+    ros:
+      ros_frame_id: "alpha_lidar_rear"
+      ros_send_point_cloud_topic: "/rslidar_points"
+      ros_send_imu_data_topic: "/rslidar_imu"
+      ros_send_by_rows: true
+    transform:         # NOTE: Per roadmap, apply TF in TF tree, not here
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      roll: 0.0
+      pitch: 0.0
+      yaw: 0.0

@@ -1,0 +1,3 @@
+# Pin image digests here (update via scripts/pin_isaac_image.sh)
+ISAAC_ROS_HUMBLE_DEV_DIGEST=nvcr.io/nvidia/isaac-ros/ros2_humble:YYYY.MM-dev@sha256:<digest>
+

@@ -1,0 +1,19 @@
+oak:
+  front:
+    serial: "19443010C1F4771300"
+    frame_id: alpha_cam_front
+    fps: 30
+    width: 1280
+    height: 720
+    color: true
+  rear:
+    serial: "14442C107145A4D200"
+    frame_id: alpha_cam_rear
+    fps: 30
+    width: 1280
+    height: 720
+    color: true
+
+ui_streaming:
+  enable_h26x: true
+  target_p95_latency_ms: 120

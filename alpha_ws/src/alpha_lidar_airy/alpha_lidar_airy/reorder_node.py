@@ -169,30 +169,46 @@ class AiryReorderNode(Node):
         self._last_pub_rear = 0.0
 
     def _process(self, msg: PointCloud2) -> PointCloud2:
-        # Validate dims
-        if msg.height and msg.width:
-            if msg.height != self._expected_h or msg.width != self._expected_w:
-                self.get_logger().warn(f'cloud dims {msg.height}x{msg.width} != expected {self._expected_h}x{self._expected_w}; forwarding anyway')
-        # Prepare output message (copy metadata)
+        # Prepare output message skeleton
         out = PointCloud2()
         out.header = msg.header
-        out.height = msg.height
-        out.width = msg.width
         out.fields = msg.fields
         out.is_bigendian = msg.is_bigendian
         out.point_step = msg.point_step
-        out.row_step = msg.row_step
         out.is_dense = False
 
-        # Work on a mutable bytearray
-        src_bytes = bytes(msg.data)
-        data = bytearray(src_bytes)
+        # Copy data into mutable buffer
+        data = bytearray(bytes(msg.data))
+        h = msg.height or 0
+        w = msg.width or 0
 
-        # Row reorder if enabled and we have a valid order matching height
-        if self._reorder_enabled and self._row_order and len(self._row_order) == msg.height:
+        # Transpose if dimensions are swapped (e.g., 900x96 instead of 96x900)
+        if (h == self._expected_w and w == self._expected_h) or (w == self._expected_h and h > w):
             try:
-                row_step = msg.row_step
-                h = msg.height
+                step = msg.point_step
+                src_row_step = msg.row_step
+                new_h = self._expected_h
+                new_w = self._expected_w
+                new_row_step = step * new_w
+                new_bytes = bytearray(new_row_step * new_h)
+                mv_src = memoryview(data)
+                mv_dst = memoryview(new_bytes)
+                for r in range(new_h):
+                    for c in range(new_w):
+                        src_off = c * src_row_step + r * step
+                        dst_off = r * new_row_step + c * step
+                        mv_dst[dst_off:dst_off+step] = mv_src[src_off:src_off+step]
+                data = new_bytes
+                h, w = new_h, new_w
+            except Exception as e:
+                self.get_logger().warn(f'transpose failed: {e}')
+
+        # (Defer dimension warning until after normalization below)
+
+        # Row reorder if enabled and order matches height
+        if self._reorder_enabled and self._row_order and len(self._row_order) == h:
+            try:
+                row_step = out.point_step * w
                 new_bytes = bytearray(row_step * h)
                 for dest_row, src_row in enumerate(self._row_order):
                     if src_row >= h:
@@ -204,22 +220,16 @@ class AiryReorderNode(Node):
             except Exception as e:
                 self.get_logger().warn(f'Row reorder failed: {e}')
 
-        # Range gate: set x,y,z to NaN for out-of-range points if x/y/z present
+        # Range gate: set x,y,z to NaN for out-of-range points
         try:
-            # Discover field offsets
             x_off = y_off = z_off = None
             for f in msg.fields:
-                if f.name == 'x':
-                    x_off = f.offset
-                elif f.name == 'y':
-                    y_off = f.offset
-                elif f.name == 'z':
-                    z_off = f.offset
+                if f.name == 'x': x_off = f.offset
+                elif f.name == 'y': y_off = f.offset
+                elif f.name == 'z': z_off = f.offset
             if x_off is not None and y_off is not None and z_off is not None:
-                step = msg.point_step
-                row_step = msg.row_step
-                h = msg.height or 0
-                w = msg.width or 0
+                step = out.point_step
+                row_step = step * w
                 mv = memoryview(data)
                 nan_bytes = struct.pack('<f', math.nan)
                 for r in range(h):
@@ -236,12 +246,55 @@ class AiryReorderNode(Node):
                                 mv[off + y_off: off + y_off + 4] = nan_bytes
                                 mv[off + z_off: off + z_off + 4] = nan_bytes
                         except Exception:
-                            # Skip malformed point
                             continue
         except Exception as e:
             self.get_logger().warn(f'Range gate failed: {e}')
 
+        # Normalize width to expected value by padding/truncating columns with NaNs for x/y/z
+        if h == self._expected_h and w != self._expected_w:
+            try:
+                step = out.point_step
+                x_off = y_off = z_off = None
+                for f in msg.fields:
+                    if f.name == 'x': x_off = f.offset
+                    elif f.name == 'y': y_off = f.offset
+                    elif f.name == 'z': z_off = f.offset
+                new_w = self._expected_w
+                new_row_step = step * new_w
+                new_bytes = bytearray(new_row_step * h)
+                mv_src = memoryview(data)
+                mv_dst = memoryview(new_bytes)
+                nan_bytes = struct.pack('<f', math.nan)
+                for r in range(h):
+                    for c in range(new_w):
+                        dst_off = r * new_row_step + c * step
+                        if c < w:
+                            src_off = r * (step * w) + c * step
+                            mv_dst[dst_off:dst_off+step] = mv_src[src_off:src_off+step]
+                        else:
+                            # Fill new columns with NaNs for x/y/z, zeros for other fields
+                            mv_dst[dst_off:dst_off+step] = b"\x00" * step
+                            if x_off is not None:
+                                mv_dst[dst_off + x_off: dst_off + x_off + 4] = nan_bytes
+                            if y_off is not None:
+                                mv_dst[dst_off + y_off: dst_off + y_off + 4] = nan_bytes
+                            if z_off is not None:
+                                mv_dst[dst_off + z_off: dst_off + z_off + 4] = nan_bytes
+                data = new_bytes
+                w = new_w
+            except Exception as e:
+                self.get_logger().warn(f'normalize width failed: {e}')
+
+        out.height = h
+        out.width = w
+        out.row_step = out.point_step * w
         out.data = bytes(data)
+
+        # Final sanity: warn if still unexpected after normalization
+        if out.height != self._expected_h or out.width != self._expected_w:
+            self.get_logger().warn(
+                f'cloud dims {out.height}x{out.width} != expected {self._expected_h}x{self._expected_w}; forwarding anyway'
+            )
         return out
 
     def _on_front(self, msg: PointCloud2):

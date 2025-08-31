@@ -1,0 +1,19 @@
+services:
+  mapping:
+    image: ${ISAAC_ROS_HUMBLE_DEV_DIGEST}
+    runtime: nvidia
+    network_mode: host
+    ipc: host
+    environment:
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ..:/workspaces/alpha_rover:rw
+    command: >
+      bash -lc "
+        source /opt/ros/humble/setup.bash &&
+        cd /workspaces/alpha_rover/alpha_ws && \
+        colcon build --symlink-install --packages-select alpha_mapping && \
+        source /workspaces/alpha_rover/alpha_ws/install/setup.bash && \
+        ros2 launch alpha_mapping nvblox_provider.launch.py
+      "

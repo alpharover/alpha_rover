@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'alpha_lidar_airy'
+package_name = 'alpha_testing'
 
 setup(
     name=package_name,
@@ -9,19 +9,17 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/launch', ['launch/airy_bringup.launch.py']),
     ],
-    install_requires=['setuptools', 'PyYAML'],
+    install_requires=['setuptools'],
     zip_safe=True,
     maintainer='Alpha SW',
     maintainer_email='devnull@example.com',
-    description='RoboSense AIRY LiDAR support: op-mode HTTP service + organized cloud reorder (skeleton).',
+    description='Runtime acceptance tests for sensors',
     license='Proprietary',
-    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'mode_service_node = alpha_lidar_airy.mode_service_node:main',
-            'reorder_node = alpha_lidar_airy.reorder_node:main',
+            'lidar_accept = alpha_testing.lidar_accept:main',
         ],
     },
 )
+

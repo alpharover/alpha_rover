@@ -12,6 +12,14 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+      - name: Enforce colcon arg order policy
+        run: |
+          # Must have packages-select before cmake-args
+          grep -nE 'colcon build .*--packages-select .* --cmake-args' .github/workflows/sensors.yml
+          # Must NOT have cmake-args before packages-select
+          if grep -nE 'colcon build .*--cmake-args .* --packages-select' .github/workflows/sensors.yml; then
+            echo "::error ::Use packages-first colcon form in sensors.yml"; exit 1;
+          fi
       - name: Setup ROS 2 apt sources
         uses: ros-tooling/setup-ros@v0.7
         with:
@@ -53,5 +61,6 @@ jobs:
         run: |
           set -e
           cd alpha_ws
-          colcon build --event-handlers console_cohesion+ --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-select \
-            alpha_lidar_airy_cpp alpha_lidar_airy alpha_bringup alpha_testing || true
+          colcon build --event-handlers console_cohesion+ \
+            --packages-select alpha_lidar_airy_cpp alpha_lidar_airy alpha_bringup alpha_testing \
+            --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON

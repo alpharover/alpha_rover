@@ -21,3 +21,29 @@ http:
       body: '{"mode": 0}'
       headers: { Content-Type: application/json }
   timeout_sec: 1.0
+
+# Optional, config-driven HTTP control block (disabled by default)
+# When enabled, mode_service builds requests from this section and does a
+# light verification via setting_data.json if verify_after_set:=true.
+airy_http:
+  enabled: false
+  endpoints:
+    front:
+      base_url: "http://192.168.1.200"
+      mode_path: "/api/mode"
+      # method: POST
+      # headers: { Content-Type: application/json }
+      # payload_run: '{"mode":"RUN"}'
+      # payload_standby: '{"mode":"STANDBY"}'
+    rear:
+      base_url: "http://192.168.1.201"
+      mode_path: "/api/mode"
+      # method: POST
+      # headers: { Content-Type: application/json }
+      # payload_run: '{"mode":"RUN"}'
+      # payload_standby: '{"mode":"STANDBY"}'
+  timeouts_ms:
+    connect: 400
+    read: 400
+  retries: 2
+  backoff_ms: 150

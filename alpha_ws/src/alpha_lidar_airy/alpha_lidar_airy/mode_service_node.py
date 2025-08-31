@@ -54,10 +54,17 @@ class AiryModeService(Node):
             self._http_cfg = _load_yaml(endpoints_param)
         else:
             try:
-                http_cfg = _load_yaml('alpha_configs/lidar_airy.yaml').get('http', {})
+                lidar_cfg = _load_yaml('alpha_configs/lidar_airy.yaml')
+                http_cfg = lidar_cfg.get('http', {})
             except Exception:
                 http_cfg = {}
             self._http_cfg = http_cfg
+
+        # Optional airy_http block (config-driven; device-specific endpoints)
+        try:
+            self._airy_http = lidar_cfg.get('airy_http', {}) if isinstance(lidar_cfg, dict) else {}
+        except Exception:
+            self._airy_http = {}
 
         qos = QoSProfile(
             depth=10,
@@ -85,19 +92,48 @@ class AiryModeService(Node):
         ep = (self._http_cfg or {}).get('endpoints', {})
         return ep.get('run' if mode == 1 else 'standby')
 
-    def _http_call(self, ip: str, endpoint: Dict) -> Tuple[bool, str]:
+    def _endpoint_airy(self, which: str, mode: int) -> Optional[Dict]:
+        cfg = self._airy_http or {}
+        if not cfg or not bool(cfg.get('enabled', False)):
+            return None
+        eps = cfg.get('endpoints', {}) or {}
+        dev = eps.get(which, {}) or {}
+        base = dev.get('base_url') or ''
+        path = dev.get('mode_path') or ''
+        if not base or not path:
+            return None
+        method = (dev.get('method') or 'POST').upper()
+        headers = dev.get('headers') or {'Content-Type': 'application/json'}
+        # payload overrides per device
+        if mode == 1:
+            body = dev.get('payload_run') or '{"mode":"RUN"}'
+        else:
+            body = dev.get('payload_standby') or '{"mode":"STANDBY"}'
+        url = base.rstrip('/') + path
+        return {'method': method, 'path': url, 'body': body, 'headers': headers}
+
+    def _http_call(self, ip: str, endpoint: Dict, *, absolute_url: bool = False, use_airy_timeouts: bool = False) -> Tuple[bool, str]:
         method = (endpoint.get('method') or 'POST').upper()
         path = endpoint.get('path') or '/'
         body = endpoint.get('body')
         headers = endpoint.get('headers') or {}
-        url = f'http://{ip}{path}'
+        url = path if absolute_url else f'http://{ip}{path}'
         data = body.encode('utf-8') if isinstance(body, str) else None
         req = urllib.request.Request(url=url, data=data, method=method)
         for k, v in headers.items():
             req.add_header(k, v)
-        timeout = float(self.get_parameter('http_timeout_sec').get_parameter_value().double_value)
-        retries = int(self.get_parameter('http_retries').get_parameter_value().integer_value)
-        backoff_ms = int(self.get_parameter('http_backoff_ms').get_parameter_value().integer_value)
+        # timeouts/retries from params; airy_http can override when enabled
+        if use_airy_timeouts and isinstance(self._airy_http, dict):
+            tcfg = self._airy_http.get('timeouts_ms', {}) or {}
+            t_conn = float(tcfg.get('connect', 0) or 0) / 1000.0
+            t_read = float(tcfg.get('read', 0) or 0) / 1000.0
+            timeout = max(t_conn, t_read, float(self.get_parameter('http_timeout_sec').get_parameter_value().double_value))
+            retries = int(self._airy_http.get('retries', self.get_parameter('http_retries').get_parameter_value().integer_value) or 0)
+            backoff_ms = int(self._airy_http.get('backoff_ms', self.get_parameter('http_backoff_ms').get_parameter_value().integer_value) or 0)
+        else:
+            timeout = float(self.get_parameter('http_timeout_sec').get_parameter_value().double_value)
+            retries = int(self.get_parameter('http_retries').get_parameter_value().integer_value)
+            backoff_ms = int(self.get_parameter('http_backoff_ms').get_parameter_value().integer_value)
         attempts = 1 + max(0, retries)
         last_err: str = ''
         for i in range(attempts):
@@ -209,9 +245,10 @@ class AiryModeService(Node):
             return True, 'dry-run'
 
         # Attempt configured endpoint first (if provided)
-        endpoint = self._endpoint(mode)
-        if endpoint:
-            ok, msg = self._http_call(ip, endpoint)
+        # Prefer airy_http if enabled; else fall back to legacy http.endpoints
+        ep_abs = self._endpoint_airy(which, mode)
+        if ep_abs:
+            ok, msg = self._http_call(ip, ep_abs, absolute_url=True, use_airy_timeouts=True)
             if ok:
                 # Optional verification step to guard silent no-ops
                 verify = bool(self.get_parameter('verify_after_set').get_parameter_value().bool_value)
@@ -228,6 +265,22 @@ class AiryModeService(Node):
                     self._states[which] = (mode, mode == 1)
                     return ok, msg
             # Fall through to legacy if endpoint failed
+        endpoint = self._endpoint(mode)
+        if endpoint:
+            ok, msg = self._http_call(ip, endpoint)
+            if ok:
+                verify = bool(self.get_parameter('verify_after_set').get_parameter_value().bool_value)
+                if verify:
+                    timeout = float(self.get_parameter('http_timeout_sec').get_parameter_value().double_value)
+                    v_ok, v_msg = self._verify_mode(ip, mode, timeout)
+                    if v_ok:
+                        self._states[which] = (mode, mode == 1)
+                        return True, f'{msg}; {v_msg}'
+                    else:
+                        self.get_logger().warn(f'Configured endpoint ok but verification failed: {v_msg}; attempting legacy fallback')
+                else:
+                    self._states[which] = (mode, mode == 1)
+                    return ok, msg
 
         # Legacy firmware fallback
         ok, msg = self._apply_mode_via_legacy_form(ip, mode)

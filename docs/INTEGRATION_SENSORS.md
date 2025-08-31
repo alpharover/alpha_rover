@@ -49,6 +49,30 @@ Pin exact SHAs after hardware validation.
 Runbooks exist in `alpha_ws/src/alpha_lidar_airy/AGENTS.md` and `alpha_ws/src/alpha_bringup/launch/startup.launch.py`.
 Default backend is `cpp`; switch with `backend:=numpy` if needed.
 
+Optional HTTP control (mode service):
+- The mode service can toggle AIRY Run/Standby via HTTP. It supports two config paths:
+  - Legacy `http.endpoints.{run,standby}` in `alpha_configs/lidar_airy.yaml` (path/method/body/headers).
+  - Optional `airy_http` block (disabled by default) with per-device base URLs and payloads.
+- You can enable verification and adjust retries via node params:
+  - `verify_after_set` (bool, default false): after HTTP set, GET `setting_data.json` to verify `OpM`.
+  - `http_retries` (int, default 0) and `http_backoff_ms` (int, default 150).
+- The node always falls back to the legacy UI form flow (Parameter_Setting.html) if configured endpoints fail.
+
+Example run (dry-run by default unless you set `http_enabled:=true`):
+```
+ros2 run alpha_lidar_airy mode_service_node \
+  --ros-args \
+  -p network_config:=alpha_configs/network.yaml \
+  -p http_enabled:=true \
+  -p verify_after_set:=true \
+  -p http_retries:=1 \
+  -p http_backoff_ms:=200
+
+# Standby then Run
+ros2 service call /alpha/ui/cmd/lidar_mode alpha_utils/srv/SetLidarMode "{target: 'both', op_mode: 0}"
+ros2 service call /alpha/ui/cmd/lidar_mode alpha_utils/srv/SetLidarMode "{target: 'both', op_mode: 1}"
+```
+
 ---
 
 ## LiDAR acceptance test (runtime)

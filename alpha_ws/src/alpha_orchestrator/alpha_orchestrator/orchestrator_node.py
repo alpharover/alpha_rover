@@ -14,6 +14,9 @@ class Orchestrator(Node):
         # Parameters
         self.declare_parameter('config_failure_domains', 'alpha_configs/failure_domains.yaml')
         self.declare_parameter('dry_run', True)
+        self.declare_parameter('compose_mapping', 'deploy/compose.mapping.yaml')
+        self.declare_parameter('compose_vslam', 'deploy/compose.vslam.yaml')
+        self.declare_parameter('images_lock', 'deploy/IMAGES.lock')
 
         # Load failure domains config
         cfg_path = self.get_parameter('config_failure_domains').get_parameter_value().string_value
@@ -103,6 +106,11 @@ class Orchestrator(Node):
                 resp.accepted = True
                 resp.message = 'recovery actions executed'
                 return resp
+            elif action in ('start_mapping', 'stop_mapping', 'start_vslam', 'stop_vslam'):
+                ok = self._compose_action(action)
+                resp.accepted = ok
+                resp.message = f'{action} {"ok" if ok else "failed"}'
+                return resp
             else:
                 resp.accepted = False
                 resp.message = f'unknown action: {action}'
@@ -160,6 +168,34 @@ class Orchestrator(Node):
             rclpy.spin_until_future_complete(self, fut, timeout_sec=2.0)
             return bool(fut.done() and getattr(fut.result(), 'success', False))
         except Exception:
+            return False
+
+    def _compose_action(self, action: str) -> bool:
+        import subprocess
+        dry_run = self.get_parameter('dry_run').get_parameter_value().bool_value
+        compose_mapping = self.get_parameter('compose_mapping').get_parameter_value().string_value
+        compose_vslam = self.get_parameter('compose_vslam').get_parameter_value().string_value
+        images_lock = self.get_parameter('images_lock').get_parameter_value().string_value
+        try:
+            if action in ('start_mapping', 'stop_mapping'):
+                compose_file = compose_mapping
+            else:
+                compose_file = compose_vslam
+            if 'start' in action:
+                cmd = ['docker', 'compose', '-f', compose_file, '--env-file', images_lock, 'up', '-d']
+            else:
+                cmd = ['docker', 'compose', '-f', compose_file, '--env-file', images_lock, 'stop']
+            self.publish_event('COMPOSE', ' '.join(cmd))
+            if dry_run:
+                self.get_logger().info('DRY-RUN: ' + ' '.join(cmd))
+                return True
+            proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            ok = proc.returncode == 0
+            if not ok:
+                self.get_logger().warn(f'compose failed: rc={proc.returncode} stderr={proc.stderr}')
+            return ok
+        except Exception as e:
+            self.get_logger().warn(f'compose exception: {e}')
             return False
 
 

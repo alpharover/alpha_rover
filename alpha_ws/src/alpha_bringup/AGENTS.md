@@ -2,8 +2,8 @@
 agent: "alpha_bringup"
 component_type: "ros2_package"
 status: "draft"
-version: "v0.1"
-updated: "2025-08-30"
+version: "v0.2"
+updated: "2025-08-31"
 owner: "Alpha SW"
 links:
   roadmap: "../ALPHA_Software_Roadmap_v2.3.md"
@@ -16,6 +16,7 @@ dependencies:
 provides:
   topics_pub:
     - {name: "/alpha/mapping/startup_status", type: "std_msgs/String", rate_hz: 1, description: "WAITING_FOR_LIDAR|SPINNING_UP|STARTED"}
+    - {name: "/alpha/gates/lidar_ready", type: "std_msgs/Bool", rate_hz: 2, description: "durable gate: true after 10s + ≥9Hz per LiDAR (3s window)"}
   topics_sub: []
   services: []
   actions: []
@@ -23,10 +24,8 @@ configs:
   - "../alpha_configs/startup_sequence.yaml"
 runbooks:
   start: |
-    # Start config manager (serves /alpha/config/get)
-    ros2 run alpha_bringup config_manager --ros-args -p config_dir:=alpha_configs
-    # In a separate terminal, run the startup sequencer (dry-run by default)
-    ros2 run alpha_bringup startup_sequencer --ros-args -p sequence_config:=alpha_configs/startup_sequence.yaml -p dry_run:=true
+    # Launch bringup (includes config manager, startup sequencer, LiDAR ready gate)
+    ros2 launch alpha_bringup startup.launch.py
   stop: |
     pkill -f alpha_bringup || true
   healthcheck: |
@@ -36,6 +35,7 @@ observability:
     - {name: "startup_sequence_ms_p95", target: 12000}
   metrics:
     - {name: "sequence_step", source: "log", note: ""}
+    - {name: "lidar_ready_gate_state", source: "/alpha/gates/lidar_ready", note: "Bool (durable)"}
 security:
   sros2_policies: []
   secrets: []
@@ -50,7 +50,8 @@ tests:
   ci_jobs:
     - {id: "bringup-sim", description: "Sim runs through sequence"}
 notes: >
-  Owns the startup sequencer and config manager; sets LiDARs to RUN, waits 10s, starts mapping.
+  Owns the startup sequencer, config manager, and LiDAR ready gate. Gate publishes true only
+  after a 10s warm-up and both `/alpha/lidar/{front,rear}/points` rates ≥ 9 Hz over a 3s window.
 
 ## Change & Decision Log
 - 2025-08-30: Added config_manager and startup_sequencer nodes; added startup.launch.py.

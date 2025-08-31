@@ -19,3 +19,5 @@ __pycache__/
 *~
 .vscode/
 .idea/
+alpha_ws/third_party/src/*
+!alpha_ws/third_party/src/.gitkeep

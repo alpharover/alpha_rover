@@ -82,23 +82,23 @@ def test_reorder_and_range_gate(tmp_path: Path):
     ])
     try:
         node = AiryReorderNode()
-        # Build a 3x2 cloud. Fill x values as row markers: row0->100, row1->200, row2->300
+        # Build a 3x2 cloud.
+        # Fill x values as row markers kept within range gate: row0->0.1, row1->0.2, row2->0.3
         # Set second column to distance 2.0 (>1.0) to trigger NaN gating.
         rows = [
-            [(100.0, 0.0, 0.0), (2.0, 0.0, 0.0)],
-            [(200.0, 0.0, 0.0), (2.0, 0.0, 0.0)],
-            [(300.0, 0.0, 0.0), (2.0, 0.0, 0.0)],
+            [(0.1, 0.0, 0.0), (2.0, 0.0, 0.0)],
+            [(0.2, 0.0, 0.0), (2.0, 0.0, 0.0)],
+            [(0.3, 0.0, 0.0), (2.0, 0.0, 0.0)],
         ]
         msg = make_cloud(3, 2, rows)
         out = node._process(msg)
         xs = read_row_x_values(out)
-        # After reorder by [1,0,2]: expect row order x markers [[200, NaN], [100, NaN], [300, NaN]]
-        assert math.isclose(xs[0][0], 200.0)
+        # After reorder by [1,0,2]: expect row order x markers [[0.2, NaN], [0.1, NaN], [0.3, NaN]]
+        assert math.isclose(xs[0][0], 0.2, rel_tol=0.0, abs_tol=1e-6)
         assert math.isnan(xs[0][1])
-        assert math.isclose(xs[1][0], 100.0)
+        assert math.isclose(xs[1][0], 0.1, rel_tol=0.0, abs_tol=1e-6)
         assert math.isnan(xs[1][1])
-        assert math.isclose(xs[2][0], 300.0)
+        assert math.isclose(xs[2][0], 0.3, rel_tol=0.0, abs_tol=1e-6)
         assert math.isnan(xs[2][1])
     finally:
         rclpy.shutdown()
-

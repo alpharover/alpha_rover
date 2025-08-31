@@ -1,0 +1,9 @@
+repositories:
+  rslidar_sdk:
+    type: git
+    url: https://github.com/RoboSense-LiDAR/rslidar_sdk.git
+    version: 7c4ea25fada93442c3d390aa4ef05e240999b851
+  rslidar_msg:
+    type: git
+    url: https://github.com/RoboSense-LiDAR/rslidar_msg.git
+    version: fe8a95cb242bd294cc3d5e3422f2093fb49a56ee

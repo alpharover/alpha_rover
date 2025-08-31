@@ -1,7 +1,9 @@
 import json
+import os
 import urllib.request
 import urllib.error
 from typing import Dict, Optional, Tuple
+from urllib import parse as _parse
 
 import yaml
 import rclpy
@@ -33,7 +35,15 @@ class AiryModeService(Node):
 
         # Load network and optional HTTP endpoints from config
         net_path = self.get_parameter('network_config').get_parameter_value().string_value
-        self._net = _load_yaml(net_path)
+        # Resolve network config robustly if a relative path is provided
+        candidates = [
+            net_path,
+            os.path.join(os.getcwd(), net_path) if net_path and not os.path.isabs(net_path) else net_path,
+            os.environ.get('ALPHA_NETWORK_CONFIG', ''),
+        ]
+        candidates = [c for c in candidates if c]
+        found = next((c for c in candidates if os.path.isfile(c)), None)
+        self._net = _load_yaml(found or net_path)
         # HTTP endpoint config: either provided via param or looked up from alpha_configs/lidar_airy.yaml under 'http'
         endpoints_param = self.get_parameter('http_endpoints').get_parameter_value().string_value
         if endpoints_param:
@@ -93,6 +103,70 @@ class AiryModeService(Node):
         except Exception as e:
             return False, str(e)
 
+    # --- Legacy firmware fallback (observed on AIRY):
+    # Reads /setting_data.json, updates 'OpM', then POSTs form fields back to
+    # /Parameter_Setting.html (or fallback to /cgi-bin/param_setting.cgi).
+    def _http_get_json(self, url: str, timeout: float) -> Tuple[bool, Dict]:
+        try:
+            with urllib.request.urlopen(url, timeout=timeout) as resp:
+                data = resp.read()
+                text = data.decode('utf-8', errors='ignore')
+                return True, json.loads(text)
+        except Exception:
+            return False, {}
+
+    def _http_post_form(self, url: str, fields: Dict, timeout: float, referer: Optional[str] = None) -> Tuple[bool, str]:
+        data = _parse.urlencode(fields).encode()
+        req = urllib.request.Request(url, data=data)
+        # Emulate browser form submission as observed in device UI
+        req.add_header('Content-Type', 'application/x-www-form-urlencoded')
+        req.add_header('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+        req.add_header('User-Agent', 'Mozilla/5.0 (X11; Linux) ALPHA-Rover')
+        if referer:
+            req.add_header('Referer', referer)
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                resp.read()
+                status = getattr(resp, 'status', 200)
+                return (200 <= status < 400), f'HTTP {status}'
+        except urllib.error.HTTPError as e:
+            # Some firmwares redirect or return 500 even when accepted; treat 2xx/3xx as success
+            if 200 <= e.code < 400:
+                return True, f'HTTP {e.code}'
+            return False, f'HTTPError {e.code}: {e.reason}'
+        except Exception as e:
+            return False, str(e)
+
+    def _apply_mode_via_legacy_form(self, ip: str, mode: int) -> Tuple[bool, str]:
+        timeout = float(self.get_parameter('http_timeout_sec').get_parameter_value().double_value)
+        ok, settings = self._http_get_json(f'http://{ip}/setting_data.json', timeout)
+        if not ok or not isinstance(settings, dict):
+            return False, 'failed to fetch setting_data.json'
+        # Update OpM (operation mode) and prepare fields
+        settings['OpM'] = str(mode)
+        fields = {k: v for k, v in settings.items()}
+        fields['save_param'] = 'Save'
+        # Warm up UI page once (some firmwares expect a prior GET)
+        try:
+            urllib.request.urlopen(f'http://{ip}/Parameter_Setting.html', timeout=timeout).read()
+        except Exception:
+            pass
+
+        ok, msg = self._http_post_form(
+            f'http://{ip}/Parameter_Setting.html', fields, timeout, referer=f'http://{ip}/Parameter_Setting.html'
+        )
+        if not ok:
+            # Fallback to CGI handler if HTML path fails
+            ok2, msg2 = self._http_post_form(
+                f'http://{ip}/cgi-bin/param_setting.cgi', fields, timeout, referer=f'http://{ip}/Parameter_Setting.html'
+            )
+            if not ok2:
+                return False, msg2
+        # Verify OpM applied
+        ok_s, settings2 = self._http_get_json(f'http://{ip}/setting_data.json', timeout)
+        applied = ok_s and str(settings2.get('OpM')) == str(mode)
+        return True, ('legacy_form_ok' if applied else 'legacy_form_posted_unverified')
+
     def _apply_mode(self, which: str, mode: int) -> Tuple[bool, str]:
         ip = self._ip_for(which)
         if not ip:
@@ -104,13 +178,18 @@ class AiryModeService(Node):
             self._states[which] = (mode, mode == 1)
             return True, 'dry-run'
 
+        # Attempt configured endpoint first (if provided)
         endpoint = self._endpoint(mode)
-        if not endpoint:
-            return False, 'HTTP endpoints not configured (see alpha_configs/lidar_airy.yaml http:...)'
+        if endpoint:
+            ok, msg = self._http_call(ip, endpoint)
+            if ok:
+                self._states[which] = (mode, mode == 1)
+                return ok, msg
+            # Fall through to legacy if endpoint failed
 
-        ok, msg = self._http_call(ip, endpoint)
+        # Legacy firmware fallback
+        ok, msg = self._apply_mode_via_legacy_form(ip, mode)
         if ok:
-            # Optimistically set ready when entering RUN; clear when entering STANDBY
             self._states[which] = (mode, mode == 1)
         return ok, msg
 
@@ -168,4 +247,3 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
-

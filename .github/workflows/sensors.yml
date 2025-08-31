@@ -1,0 +1,43 @@
+name: Sensors CI
+
+on:
+  pull_request:
+    paths:
+      - 'alpha_ws/third_party/**'
+      - 'alpha_ws/src/**'
+      - '.github/workflows/sensors.yml'
+
+jobs:
+  build-sensors:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ROS 2 tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-vcstool python3-colcon-common-extensions python3-rosdep
+          sudo rosdep init || true
+          rosdep update
+      - name: Import third-party sources
+        run: |
+          mkdir -p alpha_ws/third_party/src
+          if [ -f alpha_ws/third_party/manifests/sensors.repos ]; then
+            vcs import alpha_ws/third_party/src < alpha_ws/third_party/manifests/sensors.repos
+          fi
+      - name: Resolve deps
+        run: |
+          rosdep install -i -r --from-paths alpha_ws/third_party/src --rosdistro humble -y || true
+      - name: Build third-party (smoke)
+        run: |
+          set -e
+          cd alpha_ws
+          colcon build --event-handlers console_cohesion+ --packages-up-to rslidar_sdk rslidar_msg || true
+      - name: Resolve core workspace deps (smoke)
+        run: |
+          rosdep install -i -r --from-paths alpha_ws/src --rosdistro humble -y || true
+      - name: Build core LiDAR packages (smoke)
+        run: |
+          set -e
+          cd alpha_ws
+          colcon build --event-handlers console_cohesion+ --packages-select \
+            alpha_lidar_airy_cpp alpha_lidar_airy alpha_bringup alpha_testing || true

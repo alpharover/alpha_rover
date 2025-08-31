@@ -2,8 +2,8 @@
 agent: "alpha_lidar_airy"
 component_type: "ros2_package"
 status: "draft"
-version: "v0.1"
-updated: "2025-08-30"
+version: "v0.2"
+updated: "2025-08-31"
 owner: "Alpha SW"
 links:
   roadmap: "../../ALPHA_Software_Roadmap_v2.3.md"
@@ -27,9 +27,12 @@ configs:
   - "../alpha_configs/network.yaml"
 runbooks:
   start: |
-    # Start reorder + telemetry
-    ros2 run alpha_lidar_airy reorder_node --ros-args -p config:=alpha_configs/lidar_airy.yaml
-ros2 run alpha_lidar_airy mode_service_node --ros-args -p network_config:=alpha_configs/network.yaml -p http_enabled:=false
+    # Preferred: launch with C++ reorder backend (fast path)
+    ros2 launch alpha_lidar_airy airy_bringup.launch.py backend:=cpp start_mode_service:=false
+    # Fallback (Python/NumPy backend)
+    # ros2 launch alpha_lidar_airy airy_bringup.launch.py backend:=numpy start_mode_service:=false
+    # Optional: start only the mode service
+    # ros2 run alpha_lidar_airy mode_service_node --ros-args -p network_config:=alpha_configs/network.yaml -p http_enabled:=false
   stop: |
     # terminate the node process
     pkill -f alpha_lidar_airy || true
@@ -66,7 +69,7 @@ notes: >
 # AGENT — alpha_lidar_airy
 
 ## 1) Mission & Context
-Owns LiDAR-specific quirks: toggling RoboSense AIRY op modes (Standby/Run) and reordering organized point clouds to match NVBlox expectations.
+Owns LiDAR-specific quirks: toggling RoboSense AIRY op modes (Standby/Run) and reordering organized point clouds to match NVBlox expectations. Provides multi-backend reorder: Python/NumPy (dev) and C++ (production via alpha_lidar_airy_cpp).
 
 ## 2) Responsibilities & Boundaries
 - Must: expose `/alpha/ui/cmd/lidar_mode`, publish `/alpha/lidar/state`, and output 96×900 reordered clouds.
@@ -92,6 +95,7 @@ Owns LiDAR-specific quirks: toggling RoboSense AIRY op modes (Standby/Run) and r
 
 ### Parameters & Config Keys
 - `vertical_angle_table_path` (CSV), `expected_dims.height=96`, `expected_dims.width=900`, `range_m.min=0.10`, `range_m.max=60.0`
+- Reorder params: `backend={numpy|cpp}`, `timestamp_policy={sensor|node}` (default sensor), `range_gate_enabled` (default false)
 
 ## 4) Runbooks
 ### Start
@@ -110,7 +114,8 @@ ros2 topic hz /alpha/lidar/front/points
 ```
 
 ## 5) Observability
-- Metric: `angle_table_hash`
+- Metrics via diagnostics: `reorder_backend`, `reorder_latency_ms.{front,rear}.p50|p95`, `points_rate_hz.{front,rear}`, `dropped_or_padded_frames.{front,rear}`
+- Metric (planned): `angle_table_hash` (provenance)
 - Alerts: Missing/invalid table; dimension mismatch
 
 ## 6) Failure Modes & Recovery
@@ -124,4 +129,4 @@ ros2 topic hz /alpha/lidar/front/points
 - See acceptance entries above.
 
 ## 9) Change & Decision Log
-- TBD
+- 2025-08-31: Added multi-backend reorder (default cpp via alpha_lidar_airy_cpp); acceptance uses relative skew after warm-up; preserves sensor stamps.

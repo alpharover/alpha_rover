@@ -68,7 +68,7 @@ frames:
 ## 0.3 Sensor I/O — Raw Topics (canonical)
 | Sensor | Topic | Msg type | Rate | Notes |
 |---|---|---:|---|---|
-| Front LiDAR | `/alpha/lidar/front/points` | `sensor_msgs/PointCloud2` | 10–20 Hz | Organized cloud if available; deskew optional |
+| Front LiDAR | `/alpha/lidar/front/points` | `sensor_msgs/PointCloud2` | 10–20 Hz | Organized cloud; rows reordered by vertical angle; SensorData QoS |
 | Rear LiDAR | `/alpha/lidar/rear/points`  | `sensor_msgs/PointCloud2` | 10–20 Hz | Same as above |
 | RGB camera | `/alpha/cam/front/image_color` | `sensor_msgs/Image` | 15–30 Hz | Encoded to H.264/265 for UI stream |
 | IMU | `/alpha/imu/data` | `sensor_msgs/Imu` | 100–200 Hz | Tilt safety + deskew |
@@ -78,11 +78,11 @@ frames:
 
 ## 0.4 LiDAR→NVBlox Integration (principle & policy)
 - **Never concatenate** LiDARs before NVBlox. Publish each cloud separately (distinct `frame_id`s) to the **same NVBlox input topic**. NVBlox fuses via TF + timestamps.
-- **Requirements:** PTP skew < 5 ms; correct TF extrinsics; optional constant‑velocity deskew pre‑NVBlox.
+- **Requirements:** PTP skew < 5 ms (informational); correct TF extrinsics; optional constant‑velocity deskew pre‑NVBlox.
 - **Pre‑filters:** Per‑LiDAR throttle + voxel downsample; drop on health faults; auto‑pause mapping when TF/time gates fail.
-- **AIRY organized cloud reorder:** Raw `sensor_msgs/PointCloud2` arrives as **96×900** "organized" frames from each AIRY. Before NVBlox, rows must be reordered by **vertical ring angle** using a parsed **vertical‑angle table**; sort rows ascending by angle and copy data to match the new order. Log a stable hash of the angle table for traceability.
-- **NVBlox expectations (LiDAR):** `lidar_height=96`, `lidar_width=900`, **non‑equal vertical FOV** with `min_angle_below_zero_elevation_rad=-0.001`, `max_angle_above_zero_elevation_rad=1.5707963`. Enforce **range gate** `[0.10, 60.0] m` prior to integration; out‑of‑range points are dropped.
-- **Config hooks:** The reorder stage reads its angle table path from `alpha_configs/lidar_airy.yaml` and validates dimensions; failures raise a health fault and block mapping.
+- **AIRY organized cloud reorder:** Raw `sensor_msgs/PointCloud2` arrives as **96×900** "organized" frames from each AIRY. Before NVBlox, rows must be reordered by **vertical ring angle** using a parsed **vertical‑angle table**; sort rows ascending by angle and copy data to match the new order. Log a stable hash of the angle table for traceability and publish in diagnostics.
+- **NVBlox expectations (LiDAR):** `lidar_height=96`, `lidar_width=900`, **non‑equal vertical FOV** with `min_angle_below_zero_elevation_rad=-0.001`, `max_angle_above_zero_elevation_rad=1.5707963`. Range gate `[0.10, 60.0] m` is optional and OFF by default; when enabled it must not violate throughput/CPU SLOs.
+- **Config hooks:** The reorder stage reads its angle table path from `alpha_configs/lidar_airy.yaml` and validates dimensions; frames must be normalized to exactly 96×900 (pad/truncate) with WARNs when normalization occurs.
 
 ## 0.5 Base Image & Provisioning (bootstrap)
 - **Jetson:** JetPack (Orin), Docker Engine + Compose plugin, ROS 2 (Humble), NVIDIA Container Runtime. Create a readonly `/etc` profile and watchdog.
@@ -374,7 +374,24 @@ public:
 **Deliverables:** provider interface + NVBlox/Voxblox plugins; selector YAML.  
 **Acceptance:** Swap to Voxblox; tests pass (lower FPS OK).  
 **Deliverables (additions):** AIRY vertical‑angle reorder filter; NVBlox set to `lidar_height=96`, `lidar_width=900`, FOV `[-0.001, 1.5707963]` rad; range gate `[0.10,60.0]` m; startup sequencer: set LiDARs **RUN**, wait **10 s**, then start NVBlox.  
-**Acceptance (additions):** Reorder validated against angle table; NVBlox receives 96×900; out‑of‑range points dropped; mapping starts only after spin‑up delay; mapping stability unchanged vs v2.2.
+**Acceptance (additions):** Reorder validated against angle table; NVBlox receives exactly 96×900; range gating optional (off by default); mapping starts only after LiDAR warm‑up + rate gate; mapping stability unchanged vs v2.2.
+
+### Phase 8a — Sensor Drivers Online
+**Objective:** Bring AIRY LiDAR and OAK camera drivers online with canonical topics, health checks, and startup gates.
+
+**Acceptance:**
+- AIRY LiDAR (front/rear) publish `/alpha/lidar/{front,rear}/points` at expected dims 96×900; relative skew (`/points` vs `/points_raw`) ≤ 6 ms (P50), ≤ 12 ms (P95) after a 10 s warm‑up; stable rate (≥ 9.5 Hz P50, ≥ 9.0 Hz P95 over 60 s).
+- OAK cameras (front/rear) publish `/alpha/cam/{front,rear}/image_color` and `/camera_info` at 720p30 (or configured), camera_info sane. UI/stream pipeline targets P95 latency ≤ 120 ms.
+- Mapping provider is gated until LiDAR OK; VSLAM gated until camera OK + time sync.
+
+**External Packages & Dependencies (pins):**
+| Package | Use | Install Target | Version Pin | Canonical Topics | Acceptance |
+|---|---|---|---|---|---|
+| rslidar_sdk (+ rslidar_msg) | AIRY LiDAR driver | Host (source) | Commit SHA | `/alpha/lidar/{front,rear}/points_raw` → reorder → `/points` | dims=96×900; skew ≤20 ms |
+| depthai-ros | OAK camera driver | Host (apt) | apt version | `/alpha/cam/{front,rear}/image_color`, `/camera_info` | camera_info sane; FPS stable; UI P95≤120 ms |
+| isaac_ros_nvblox | Mapping (ESDF/mesh) | Container | Image digest | provider contract topics | FPS target met; provider swap OK |
+| isaac_ros_visual_slam | Visual SLAM | Container | Image digest | `/alpha/vslam/odom` + TF | repeatability tolerance OK |
+
 
 ### Phase 9 — Navigation: Teach‑&‑Repeat / Topological RTH
 **Deliverables:** path recorder, graph builder, topo follower; `/start_record` `/stop_record` `/go_home`.  

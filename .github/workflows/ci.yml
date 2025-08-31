@@ -39,6 +39,8 @@ jobs:
       - name: Install pre-commit
         run: pipx install pre-commit
       - name: Run pre-commit (agents index + validate)
+        env:
+          AGENTS_INDEX_NO_DATE: "1"
         run: |
           pre-commit run --all-files || (echo 'Expected to update docs/AGENTS_INDEX.md; please commit.' && git --no-pager diff && exit 1)
 

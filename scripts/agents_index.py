@@ -45,7 +45,9 @@ def main():
   rows.sort(key=lambda x: (x[1], x[0]))
   with open(out, "w", encoding="utf-8") as f:
     f.write("# AGENTS Index\n\n")
-    f.write(f"_Generated: {datetime.date.today().isoformat()}_\n\n")
+    # Avoid CI churn: allow suppressing date line via env var
+    if not os.environ.get("AGENTS_INDEX_NO_DATE"):
+      f.write(f"_Generated: {datetime.date.today().isoformat()}_\n\n")
     f.write("| Agent | Type | Status | Version | Updated | Owner | Path |\n")
     f.write("|---|---|---|---|---|---|---|\n")
     for r in rows:

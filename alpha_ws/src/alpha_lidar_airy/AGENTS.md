@@ -96,6 +96,7 @@ Owns LiDAR-specific quirks: toggling RoboSense AIRY op modes (Standby/Run) and r
 ### Parameters & Config Keys
 - `vertical_angle_table_path` (CSV), `expected_dims.height=96`, `expected_dims.width=900`, `range_m.min=0.10`, `range_m.max=60.0`
 - Reorder params: `backend={numpy|cpp}`, `timestamp_policy={sensor|node}` (default sensor), `range_gate_enabled` (default false)
+- Mode service (HTTP): `http_enabled` (default false); optional `verify_after_set` (default false), `http_retries` (default 0), `http_backoff_ms` (default 150). When verification is enabled, the node GETs `setting_data.json` and checks `OpM` after applying configured endpoints; on mismatch, it warns and attempts legacy UI fallback.
 
 ## 4) Runbooks
 ### Start

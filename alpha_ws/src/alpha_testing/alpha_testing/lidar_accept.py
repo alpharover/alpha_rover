@@ -18,7 +18,7 @@ class LidarAccept(Node):
         self.rel_max_skew_s = rel_max_skew_ms / 1000.0
         self.abs_max_skew_s = abs_max_skew_ms / 1000.0
         self.window_s = window_s
-        self.start_time = time.time()
+        self.start_time = time.monotonic()
         self._subs = []
         # Buffers per ns
         self.raw_stamps = {k: [] for k in EXPECTED}
@@ -57,7 +57,7 @@ class LidarAccept(Node):
                 nearest = min(self.raw_stamps[ns], key=lambda s: abs(s - stamp_ns))
                 rel = abs(nearest - stamp_ns) / 1e9
                 # only record after warmup
-                if time.time() - self.start_time >= self.warmup_s and rel <= 0.015:
+                if time.monotonic() - self.start_time >= self.warmup_s and rel <= 0.015:
                     self.rel_skews[ns].append(rel)
             # trim points list to last 2s
             cutoff = stamp_ns - 2_000_000_000
@@ -87,9 +87,9 @@ def main():
     node = LidarAccept(args.warmup_s, args.relative_max_skew_ms, args.absolute_max_skew_ms, args.window_s)
     ex = SingleThreadedExecutor()
     ex.add_node(node)
-    end = time.time() + node.window_s
+    end = time.monotonic() + node.window_s
     try:
-        while time.time() < end and rclpy.ok():
+        while time.monotonic() < end and rclpy.ok():
             ex.spin_once(timeout_sec=0.2)
     finally:
         try:

@@ -30,7 +30,7 @@ class LidarReadyGate(Node):
 
         self._front: Deque[float] = deque(maxlen=100)
         self._rear: Deque[float] = deque(maxlen=100)
-        self._t0 = time.time()
+        self._t0 = time.monotonic()
         self._last_state = False
 
         qos = qos_profile_sensor_data
@@ -44,13 +44,13 @@ class LidarReadyGate(Node):
         self.get_logger().info(f'lidar_ready gate active: warmup={self.warmup_s}s min_rate={self.min_rate_hz}Hz window={self.window_s}s')
 
     def _cb_front(self, _msg: PointCloud2):
-        self._front.append(time.time())
+        self._front.append(time.monotonic())
 
     def _cb_rear(self, _msg: PointCloud2):
-        self._rear.append(time.time())
+        self._rear.append(time.monotonic())
 
     def _rate(self, buf: Deque[float]) -> float:
-        now = time.time()
+        now = time.monotonic()
         while buf and now - buf[0] > self.window_s:
             buf.popleft()
         if len(buf) < 2:
@@ -59,7 +59,7 @@ class LidarReadyGate(Node):
         return (len(buf) - 1) / dt if dt > 0 else 0.0
 
     def _tick(self):
-        now = time.time()
+        now = time.monotonic()
         warm = (now - self._t0) >= self.warmup_s
         rate_f = self._rate(self._front)
         rate_r = self._rate(self._rear)

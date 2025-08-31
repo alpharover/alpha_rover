@@ -27,6 +27,10 @@ class AiryModeService(Node):
         self.declare_parameter('http_timeout_sec', 1.0)
         self.declare_parameter('http_config_key', 'lidar_airy')
         self.declare_parameter('http_endpoints', '')  # optional direct YAML path, else use config key under alpha_configs/lidar_airy.yaml
+        # Optional robustness/observability controls
+        self.declare_parameter('verify_after_set', False)
+        self.declare_parameter('http_retries', 0)         # additional attempts after the first
+        self.declare_parameter('http_backoff_ms', 150)     # sleep between retries
 
         self._states: Dict[str, Tuple[int, bool]] = {
             'front': (0, False),
@@ -92,16 +96,32 @@ class AiryModeService(Node):
         for k, v in headers.items():
             req.add_header(k, v)
         timeout = float(self.get_parameter('http_timeout_sec').get_parameter_value().double_value)
-        try:
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                status = getattr(resp, 'status', 200)
-                if 200 <= status < 300:
-                    return True, f'HTTP {status}'
-                return False, f'HTTP {status}'
-        except urllib.error.HTTPError as e:
-            return False, f'HTTPError {e.code}: {e.reason}'
-        except Exception as e:
-            return False, str(e)
+        retries = int(self.get_parameter('http_retries').get_parameter_value().integer_value)
+        backoff_ms = int(self.get_parameter('http_backoff_ms').get_parameter_value().integer_value)
+        attempts = 1 + max(0, retries)
+        last_err: str = ''
+        for i in range(attempts):
+            try:
+                with urllib.request.urlopen(req, timeout=timeout) as resp:
+                    status = getattr(resp, 'status', 200)
+                    if 200 <= status < 300:
+                        return True, f'HTTP {status}'
+                    last_err = f'HTTP {status}'
+            except urllib.error.HTTPError as e:
+                # treat as error unless 2xx/3xx
+                if 200 <= e.code < 300:
+                    return True, f'HTTP {e.code}'
+                last_err = f'HTTPError {e.code}: {e.reason}'
+            except Exception as e:  # noqa: BLE001
+                last_err = str(e)
+            # backoff between attempts
+            if i + 1 < attempts and backoff_ms > 0:
+                try:
+                    import time as _t
+                    _t.sleep(backoff_ms / 1000.0)
+                except Exception:
+                    pass
+        return False, last_err or 'HTTP request failed'
 
     # --- Legacy firmware fallback (observed on AIRY):
     # Reads /setting_data.json, updates 'OpM', then POSTs form fields back to
@@ -167,6 +187,16 @@ class AiryModeService(Node):
         applied = ok_s and str(settings2.get('OpM')) == str(mode)
         return True, ('legacy_form_ok' if applied else 'legacy_form_posted_unverified')
 
+    def _verify_mode(self, ip: str, expected_mode: int, timeout: float) -> Tuple[bool, str]:
+        ok, js = self._http_get_json(f'http://{ip}/setting_data.json', timeout)
+        if not ok:
+            return False, 'verify_get_failed'
+        got = str(js.get('OpM'))
+        want = str(expected_mode)
+        if got == want:
+            return True, 'verified'
+        return False, f'verify_mismatch got={got} want={want}'
+
     def _apply_mode(self, which: str, mode: int) -> Tuple[bool, str]:
         ip = self._ip_for(which)
         if not ip:
@@ -183,8 +213,20 @@ class AiryModeService(Node):
         if endpoint:
             ok, msg = self._http_call(ip, endpoint)
             if ok:
-                self._states[which] = (mode, mode == 1)
-                return ok, msg
+                # Optional verification step to guard silent no-ops
+                verify = bool(self.get_parameter('verify_after_set').get_parameter_value().bool_value)
+                if verify:
+                    timeout = float(self.get_parameter('http_timeout_sec').get_parameter_value().double_value)
+                    v_ok, v_msg = self._verify_mode(ip, mode, timeout)
+                    if v_ok:
+                        self._states[which] = (mode, mode == 1)
+                        return True, f'{msg}; {v_msg}'
+                    else:
+                        self.get_logger().warn(f'Configured endpoint ok but verification failed: {v_msg}; attempting legacy fallback')
+                        # Fall through to legacy
+                else:
+                    self._states[which] = (mode, mode == 1)
+                    return ok, msg
             # Fall through to legacy if endpoint failed
 
         # Legacy firmware fallback

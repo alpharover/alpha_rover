@@ -119,6 +119,12 @@ def validate_front(front, path):
     errs.append("links.roadmap is required")
   return errs
 
+EXCLUDE_PREFIXES = ("Archive/", "alpha_rover_legacy/", "Archive\\", "alpha_rover_legacy\\")
+
+def _is_excluded(path: str) -> bool:
+  p = path.replace("\\", "/")
+  return any(p.startswith(pref) for pref in EXCLUDE_PREFIXES)
+
 def main():
   base = sys.argv[1] if len(sys.argv) > 1 else "."
   failed = False
@@ -126,8 +132,10 @@ def main():
   for dirpath, _, filenames in os.walk(base):
     for fn in filenames:
       if fn == "AGENTS.md":
-        found += 1
         p = os.path.join(dirpath, fn)
+        if _is_excluded(os.path.relpath(p, base)):
+          continue
+        found += 1
         with open(p, "r", encoding="utf-8") as f:
           txt = f.read()
         fm_txt, body = parse_front_matter(txt)
@@ -145,7 +153,7 @@ def main():
         else:
           print(f"[OK] {p}")
   if found == 0:
-    print("[WARN] no AGENTS.md files found under", base)
+    print("[WARN] no AGENTS.md files found under", base, "(after exclusions)")
   sys.exit(1 if failed else 0)
 
 if __name__ == "__main__":

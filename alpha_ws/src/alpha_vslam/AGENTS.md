@@ -43,7 +43,7 @@ tests:
 notes: >
   Runs Isaac ROS Visual SLAM inside a container with pinned image digest.
 
+---
 # AGENT — alpha_vslam
 
 Wrapper that launches Visual SLAM in a container and remaps inputs to canonical camera topics. Adjust launch parameters and remappings for stereo as needed.
-

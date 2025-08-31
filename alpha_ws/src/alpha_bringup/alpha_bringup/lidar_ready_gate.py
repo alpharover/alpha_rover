@@ -7,6 +7,7 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import Bool
+from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
 
 
@@ -40,6 +41,7 @@ class LidarReadyGate(Node):
         gate_qos.reliability = ReliabilityPolicy.RELIABLE
         gate_qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
         self.pub = self.create_publisher(Bool, '/alpha/gates/lidar_ready', gate_qos)
+        self.diag = self.create_publisher(DiagnosticArray, '/alpha/gates/lidar_ready_status', 10)
         self.timer = self.create_timer(0.5, self._tick)
         self.get_logger().info(f'lidar_ready gate active: warmup={self.warmup_s}s min_rate={self.min_rate_hz}Hz window={self.window_s}s')
 
@@ -72,6 +74,30 @@ class LidarReadyGate(Node):
             self.get_logger().info(f'lidar_ready={ready} warm={warm} rate_f={rate_f:.2f}Hz rate_r={rate_r:.2f}Hz')
             self._last_state = ready
         self.pub.publish(Bool(data=ready))
+        # Publish status diagnostics
+        st = DiagnosticStatus()
+        st.name = 'lidar_ready'
+        st.level = DiagnosticStatus.OK if ready else DiagnosticStatus.WARN
+        reason = 'ok'
+        if not warm:
+            reason = 'warmup'
+        elif rate_f < self.min_rate_hz and rate_r < self.min_rate_hz:
+            reason = 'both_rate_low'
+        elif rate_f < self.min_rate_hz:
+            reason = 'front_rate_low'
+        elif rate_r < self.min_rate_hz:
+            reason = 'rear_rate_low'
+        st.message = reason
+        st.values = [
+            KeyValue(key='warmup_elapsed', value=str(warm)),
+            KeyValue(key='front_rate_hz', value=f'{rate_f:.2f}'),
+            KeyValue(key='rear_rate_hz', value=f'{rate_r:.2f}'),
+            KeyValue(key='window_s', value=f'{self.window_s:.1f}'),
+            KeyValue(key='min_rate_hz', value=f'{self.min_rate_hz:.2f}'),
+        ]
+        arr = DiagnosticArray(status=[st])
+        arr.header.stamp = self.get_clock().now().to_msg()
+        self.diag.publish(arr)
 
 
 def main():

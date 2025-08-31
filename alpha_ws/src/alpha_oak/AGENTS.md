@@ -38,6 +38,7 @@ observability:
 security:
   sros2_policies: []
   secrets: []
+---
 lifecycle:
   states: ["INIT","RUNNING","FAILED"]
   transitions: []
@@ -56,4 +57,3 @@ notes: >
 
 ## Runbooks
 See start/stop/healthcheck above.
-

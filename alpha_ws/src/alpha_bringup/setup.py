@@ -24,6 +24,7 @@ setup(
             'config_manager = alpha_bringup.config_manager:main',
             'startup_sequencer = alpha_bringup.startup_sequencer:main',
             'lidar_ready_gate = alpha_bringup.lidar_ready_gate:main',
+            'mapping_autostart = alpha_bringup.mapping_autostart:main',
         ],
     },
 )

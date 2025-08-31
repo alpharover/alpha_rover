@@ -227,4 +227,18 @@ def generate_launch_description():
             }],
             output='screen',
         ),
+
+        # Mapping autostart wired to durable lidar_ready gate
+        Node(
+            package='alpha_bringup',
+            executable='mapping_autostart',
+            name='alpha_mapping_autostart',
+            parameters=[{
+                'allow_single_lidar': False,
+                'degrade_timeout_s': 30,
+                'compose_file': 'deploy/compose.mapping.yaml',
+                'env_file': 'deploy/IMAGES.lock',
+            }],
+            output='screen',
+        ),
 ])

@@ -30,6 +30,7 @@ observability:
 security:
   sros2_policies: []
   secrets: []
+---
 lifecycle:
   states: ["MANUAL"]
   transitions: []
@@ -45,4 +46,3 @@ notes: >
 
 ## LiDAR Acceptance
 Passes when both front and rear LiDAR publish 96×900 PointCloud2 with header skew ≤ 20 ms.
-

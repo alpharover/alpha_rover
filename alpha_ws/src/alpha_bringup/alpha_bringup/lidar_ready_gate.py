@@ -7,6 +7,7 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import Bool
+from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
 
 
 class LidarReadyGate(Node):
@@ -35,7 +36,10 @@ class LidarReadyGate(Node):
         qos = qos_profile_sensor_data
         self.create_subscription(PointCloud2, self.front_topic, self._cb_front, qos)
         self.create_subscription(PointCloud2, self.rear_topic, self._cb_rear, qos)
-        self.pub = self.create_publisher(Bool, '/alpha/gates/lidar_ready', 10)
+        gate_qos = QoSProfile(depth=1)
+        gate_qos.reliability = ReliabilityPolicy.RELIABLE
+        gate_qos.durability = DurabilityPolicy.TRANSIENT_LOCAL
+        self.pub = self.create_publisher(Bool, '/alpha/gates/lidar_ready', gate_qos)
         self.timer = self.create_timer(0.5, self._tick)
         self.get_logger().info(f'lidar_ready gate active: warmup={self.warmup_s}s min_rate={self.min_rate_hz}Hz window={self.window_s}s')
 
@@ -80,4 +84,3 @@ def main():
     finally:
         node.destroy_node()
         rclpy.shutdown()
-

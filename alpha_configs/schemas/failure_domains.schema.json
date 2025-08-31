@@ -14,7 +14,17 @@
             "type": "array",
             "items": {
               "type": "object",
-              "additionalProperties": { "oneOf": [ {"type": "string"}, {"type": "number"}, {"type": "boolean"} ] }
+              "properties": {
+                "mode": { "type": "string" },
+                "limit_speed": { "type": "number" },
+                "switch": { "type": "string" }
+              },
+              "oneOf": [
+                { "required": ["mode"] },
+                { "required": ["limit_speed"] },
+                { "required": ["switch"] }
+              ],
+              "additionalProperties": false
             }
           }
         }
@@ -24,4 +34,3 @@
   },
   "additionalProperties": true
 }
-

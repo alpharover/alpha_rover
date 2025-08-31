@@ -2,6 +2,19 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+import os
+
+
+def _abs(path: str) -> str:
+    candidates = [
+        path,
+        os.path.join(os.getcwd(), path) if not os.path.isabs(path) else path,
+        os.path.join(os.path.expanduser('~'), 'alpha_rover', path) if not os.path.isabs(path) else path,
+    ]
+    for c in candidates:
+        if c and os.path.isfile(c):
+            return os.path.abspath(c)
+    return path
 
 
 def generate_launch_description():
@@ -24,7 +37,7 @@ def generate_launch_description():
             executable='startup_sequencer',
             name='alpha_startup_sequencer',
             parameters=[{
-                'sequence_config': 'alpha_configs/startup_sequence.yaml',
+                'sequence_config': _abs('alpha_configs/startup_sequence.yaml'),
                 'dry_run': True,
             }],
             output='screen',
@@ -36,7 +49,7 @@ def generate_launch_description():
             executable='mode_service_node',
             name='alpha_airy_mode_service',
             parameters=[{
-                'network_config': 'alpha_configs/network.yaml',
+                'network_config': _abs('alpha_configs/network.yaml'),
                 'http_enabled': False,
             }],
             output='screen',
@@ -48,11 +61,13 @@ def generate_launch_description():
             executable='reorder_node',
             name='alpha_airy_reorder',
             parameters=[{
-                'config': 'alpha_configs/lidar_airy.yaml',
+                'config': _abs('alpha_configs/lidar_airy.yaml'),
                 'input_front_topic': '/alpha/lidar/front/points_raw',
                 'input_rear_topic': '/alpha/lidar/rear/points_raw',
+                'backend': 'numpy',
+                'timestamp_policy': 'sensor',
                 'target_rate_hz': 0.0,
-            }],
+                }],
             output='screen',
         ),
 
@@ -64,9 +79,9 @@ def generate_launch_description():
             parameters=[{
                 'always_ok': True,
                 'enforce': False,
-                'bounds_config': 'alpha_configs/calibration_bounds.yaml',
-                'nominal_extrinsics': 'alpha_configs/extrinsics_seed.yaml',
-                'current_extrinsics': 'alpha_configs/extrinsics_current.yaml',
+                'bounds_config': _abs('alpha_configs/calibration_bounds.yaml'),
+                'nominal_extrinsics': _abs('alpha_configs/extrinsics_seed.yaml'),
+                'current_extrinsics': _abs('alpha_configs/extrinsics_current.yaml'),
                 'compare_from_config': True,
             }],
             output='screen',
@@ -80,9 +95,9 @@ def generate_launch_description():
             parameters=[{
                 'always_ok': True,
                 'enforce': False,
-                'bounds_config': 'alpha_configs/calibration_bounds.yaml',
-                'nominal_extrinsics': 'alpha_configs/extrinsics_seed.yaml',
-                'current_extrinsics': 'alpha_configs/extrinsics_current.yaml',
+                'bounds_config': _abs('alpha_configs/calibration_bounds.yaml'),
+                'nominal_extrinsics': _abs('alpha_configs/extrinsics_seed.yaml'),
+                'current_extrinsics': _abs('alpha_configs/extrinsics_current.yaml'),
                 'compare_from_config': True,
             }],
             output='screen',
@@ -94,7 +109,7 @@ def generate_launch_description():
             executable='mode_manager',
             name='alpha_mode_manager',
             parameters=[{
-                'modes_config': 'alpha_configs/modes.yaml',
+                'modes_config': _abs('alpha_configs/modes.yaml'),
                 'enforce_guards': True,
             }],
             output='screen',
@@ -106,7 +121,7 @@ def generate_launch_description():
             executable='orchestrator',
             name='alpha_orchestrator',
             parameters=[{
-                'config_failure_domains': 'alpha_configs/failure_domains.yaml',
+                'config_failure_domains': _abs('alpha_configs/failure_domains.yaml'),
                 'dry_run': True,
             }],
             output='screen',
@@ -118,7 +133,7 @@ def generate_launch_description():
             executable='slo_publisher',
             name='alpha_slo_publisher',
             parameters=[{
-                'degrade_config': 'alpha_configs/degrade_policies.yaml',
+                'degrade_config': _abs('alpha_configs/degrade_policies.yaml'),
                 'publish_period_sec': 1.0,
                 'window_size': 200,
             }],
@@ -132,7 +147,7 @@ def generate_launch_description():
             executable='degrade_manager',
             name='alpha_degrade_manager',
             parameters=[{
-                'degrade_config': 'alpha_configs/degrade_policies.yaml',
+                'degrade_config': _abs('alpha_configs/degrade_policies.yaml'),
                 'manage_mapping_overlay': True,
                 'dry_run': True,
                 'good_period_sec': 5.0,

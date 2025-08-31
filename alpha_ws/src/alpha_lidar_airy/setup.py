@@ -11,7 +11,7 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', ['launch/airy_bringup.launch.py']),
     ],
-    install_requires=['setuptools', 'PyYAML'],
+    install_requires=['setuptools', 'PyYAML', 'numpy'],
     zip_safe=True,
     maintainer='Alpha SW',
     maintainer_email='devnull@example.com',

@@ -2,16 +2,19 @@ perception:
   critical: [vslam]
   optional: [nvblox]
   recovery:
-    vslam_lost: [switch: wheel_odom_only, limit_speed: 0.3, mode: failsafe]
+    vslam_lost:
+      - { switch: wheel_odom_only }
+      - { limit_speed: 0.3 }
+      - { mode: FAILSAFE }
 motion:
   critical: [base_driver, twist_mux]
   optional: [motion_guards]
   recovery:
-    base_fault: [e_stop]
+    base_fault:
+      - { mode: FAILSAFE }
 comms:
   critical: [ws_bridge]
   optional: [hud_stream]
 storage:
   critical: [recorder_triggered]
   optional: [ring_buffer]
-

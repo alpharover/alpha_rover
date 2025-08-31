@@ -32,4 +32,12 @@ jobs:
           set -e
           cd alpha_ws
           colcon build --event-handlers console_cohesion+ --packages-up-to rslidar_sdk rslidar_msg || true
-
+      - name: Resolve core workspace deps (smoke)
+        run: |
+          rosdep install -i -r --from-paths alpha_ws/src --rosdistro humble -y || true
+      - name: Build core LiDAR packages (smoke)
+        run: |
+          set -e
+          cd alpha_ws
+          colcon build --event-handlers console_cohesion+ --packages-select \
+            alpha_lidar_airy_cpp alpha_lidar_airy alpha_bringup alpha_testing || true

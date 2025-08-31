@@ -112,18 +112,15 @@ public:
         std::iota(state_.row_order.begin(), state_.row_order.end(), 0);
         std::stable_sort(state_.row_order.begin(), state_.row_order.end(), [&](int a, int b){ return ang[a] < ang[b]; });
         state_.have_order = true;
-        // FNV-1a 64-bit hash of angles for provenance
+        // FNV-1a 64-bit hash of angle bytes (strict-aliasing safe)
         uint64_t h = 1469598103934665603ULL;
         for (double d : ang) {
-          auto v = *reinterpret_cast<uint64_t*>(&d);
-          h ^= (v & 0xFF);      h *= 1099511628211ULL;
-          h ^= ((v>>8)&0xFF);   h *= 1099511628211ULL;
-          h ^= ((v>>16)&0xFF);  h *= 1099511628211ULL;
-          h ^= ((v>>24)&0xFF);  h *= 1099511628211ULL;
-          h ^= ((v>>32)&0xFF);  h *= 1099511628211ULL;
-          h ^= ((v>>40)&0xFF);  h *= 1099511628211ULL;
-          h ^= ((v>>48)&0xFF);  h *= 1099511628211ULL;
-          h ^= ((v>>56)&0xFF);  h *= 1099511628211ULL;
+          unsigned char bytes[sizeof(double)];
+          std::memcpy(bytes, &d, sizeof(double));
+          for (size_t i = 0; i < sizeof(double); ++i) {
+            h ^= static_cast<uint64_t>(bytes[i]);
+            h *= 1099511628211ULL;
+          }
         }
         std::ostringstream oss; oss << std::hex << h;
         state_.angle_hash = oss.str();

@@ -71,6 +71,22 @@ def generate_launch_description():
             output='screen',
         ),
 
+        # LiDAR ready gate (publishes /alpha/gates/lidar_ready)
+        Node(
+            package='alpha_bringup',
+            executable='lidar_ready_gate',
+            name='alpha_lidar_ready_gate',
+            parameters=[{
+                'warmup_s': 10.0,
+                'window_s': 3.0,
+                'min_rate_hz': 9.0,
+                'flip_low_hz': 8.0,
+                'front_topic': '/alpha/lidar/front/points',
+                'rear_topic': '/alpha/lidar/rear/points',
+            }],
+            output='screen',
+        ),
+
         # Time sync preflight gate (skeleton)
         Node(
             package='alpha_time_sync',

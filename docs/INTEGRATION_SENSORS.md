@@ -94,6 +94,11 @@ docker compose -f compose.mapping.yaml --env-file IMAGES.lock up -d
 docker compose -f compose.vslam.yaml --env-file IMAGES.lock up -d
 ```
 
+Mapping startup is gated by LiDAR readiness:
+- Gate topic: `/alpha/gates/lidar_ready` (std_msgs/Bool), published by `alpha_bringup/lidar_ready_gate` at 2 Hz.
+- True only after 10 s warm‑up AND each `/alpha/lidar/{front,rear}/points` rate ≥ 9 Hz over a 3 s window.
+- Orchestrator/Sequencer should start NVBlox only when the gate is true.
+
 ---
 
 ## Definition of Done (sensors scope)

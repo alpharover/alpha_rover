@@ -99,6 +99,9 @@ Mapping startup is gated by LiDAR readiness:
 - True only after 10 s warm‑up AND each `/alpha/lidar/{front,rear}/points` rate ≥ 9 Hz over a 3 s window.
 - Orchestrator/Sequencer should start NVBlox only when the gate is true.
 
+ROS domains & discovery:
+- Standardize domains across environments; see `docs/DEPLOY_ENV.md` for values and service integration.
+
 ---
 
 ## Definition of Done (sensors scope)

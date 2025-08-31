@@ -130,9 +130,7 @@ jobs:
           set -euo pipefail
           source /opt/ros/humble/setup.bash
           cd "$ALPHA_WS"
-          if [ -f install/setup.bash ]; then
-            source install/setup.bash
-          fi
+          source install/setup.bash
           colcon test --merge-install
           colcon test-result --verbose
       - name: Run unit tests (pytest)
@@ -141,9 +139,7 @@ jobs:
           set -euo pipefail
           # Source ROS 2 and the built workspace so generated Python interfaces are importable
           source /opt/ros/humble/setup.bash
-          if [ -f alpha_ws/install/setup.bash ]; then
-            source alpha_ws/install/setup.bash
-          fi
+          source alpha_ws/install/setup.bash
           # Run package unit tests directly with pytest
           python3 -m pytest \
             alpha_ws/src/alpha_lidar_airy/test \

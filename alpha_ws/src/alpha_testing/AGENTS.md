@@ -41,8 +41,8 @@ tests:
 notes: >
   Runtime acceptance checks, run on-device against live topics.
 
+---
 # AGENT — alpha_testing
 
 ## LiDAR Acceptance
 Passes when both front and rear LiDAR publish 96×900 PointCloud2 with header skew ≤ 20 ms.
-

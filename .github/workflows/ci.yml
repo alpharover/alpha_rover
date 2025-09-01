@@ -63,6 +63,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             ros-humble-ros-base \
+            ros-humble-pluginlib \
+            ros-humble-rclpy \
+            ros-humble-rclcpp \
+            ros-humble-std-msgs \
+            ros-humble-sensor-msgs \
             python3-colcon-common-extensions \
             python3-colcon-ros \
             ros-dev-tools \

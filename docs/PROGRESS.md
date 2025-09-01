@@ -84,3 +84,18 @@ Artifacts and decisions are linked from AGENTS docs where relevant.
 - CI now builds/tests all packages and adds a `tf_ok` enforcement unit test (roadmap 10.6 — Calibration tools + TF preflight/CI).
 - Added `alpha_configs/extrinsics_current.yaml` for calibration (roadmap 7.13 — extrinsics_seed.yaml).
 - Integrated `video_controller` and wired into launch (roadmap 10.3 — Comms Manager + budgets + impairment harness in CI).
+
+## 2025-09-01 (cont.) — Mode service hardening, config schema lock, docs
+- Contracts & schemas:
+  - Enforced explicit recovery actions in `failure_domains.schema.json` (arrays of typed objects: `mode|limit_speed|switch`).
+  - Migrated `alpha_configs/failure_domains.yaml` to the new contract; CI validator rejects legacy string lists.
+- LiDAR mode service:
+  - Added optional `verify_after_set` (GET `setting_data.json` to confirm `OpM`) and HTTP `http_retries`/`http_backoff_ms` knobs.
+  - On‑device test: Run/Standby applied; verification OK; legacy UI fallback used when configured endpoints didn’t match.
+  - Introduced optional `airy_http` config (disabled by default) with per‑device endpoints/timeouts; mode service prefers this when enabled.
+- Docs:
+  - `INTEGRATION_SENSORS.md`: added section on mode_service HTTP control, verification, retries.
+  - `README.md`: added concise snippet to enable HTTP mode toggling with verification.
+- PR housekeeping:
+  - Merged: #12 (schema+config), #13 (mode_service verify/retry), #14 (`airy_http` support), #15 (remove unused param + docs).
+  - Closed superseded PR #10 (docs-index stability) after policy PR merged.

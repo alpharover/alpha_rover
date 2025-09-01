@@ -16,7 +16,7 @@ jobs:
         run: |
           # Check only actual colcon build lines, not enforcement lines
           # Must NOT have cmake-args before packages-select on any colcon line
-          if grep -nE '^[[:space:]]*colcon build .*--cmake-args .* --packages-select' .github/workflows/sensors.yml; then
+          if grep -nE '^[[:space:]]*colcon build[[:space:]].*--cmake-args[[:space:]].* --packages-select' .github/workflows/sensors.yml; then
             echo "::error ::Use packages-first colcon form in sensors.yml"; exit 1;
           fi
       - name: Setup ROS 2 apt sources
@@ -33,6 +33,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            ros-humble-ros-base \
             build-essential cmake \
             libyaml-cpp-dev \
             ros-humble-rclcpp \
@@ -51,6 +52,9 @@ jobs:
       - name: Build third-party (smoke)
         run: |
           set -e
+          set +u
+          source /opt/ros/humble/setup.bash
+          set -u
           cd alpha_ws
           colcon build --event-handlers console_cohesion+ --packages-up-to rslidar_sdk rslidar_msg || true
       - name: Resolve core workspace deps (smoke)
@@ -59,7 +63,10 @@ jobs:
       - name: Build core LiDAR packages (smoke)
         run: |
           set -e
+          set +u
+          source /opt/ros/humble/setup.bash
+          set -u
           cd alpha_ws
           colcon build --event-handlers console_cohesion+ \
-            --packages-select alpha_lidar_airy_cpp alpha_lidar_airy alpha_bringup alpha_testing \
+            --packages-up-to alpha_lidar_airy_cpp alpha_lidar_airy alpha_bringup alpha_testing \
             --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON

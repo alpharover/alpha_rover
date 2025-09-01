@@ -1,3 +1,4 @@
+import pytest
 import rclpy
 from std_srvs.srv import Trigger
 
@@ -10,6 +11,7 @@ def write_yaml(path, content):
         yaml.safe_dump(content, f)
 
 
+@pytest.mark.unit
 def test_tf_ok_enforce(tmp_path):
     # Create nominal/current within bounds
     nominal = {
@@ -52,4 +54,3 @@ def test_tf_ok_enforce(tmp_path):
         assert resp.success
     finally:
         rclpy.shutdown()
-

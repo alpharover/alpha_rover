@@ -1,5 +1,6 @@
 import time
 
+import pytest
 import rclpy
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus
 
@@ -14,6 +15,7 @@ def make_breach_array():
     return arr
 
 
+@pytest.mark.unit
 def test_escalate_and_deescalate():
     rclpy.init()
     try:
@@ -33,4 +35,3 @@ def test_escalate_and_deescalate():
         assert node.current_level == 'L1'
     finally:
         rclpy.shutdown()
-

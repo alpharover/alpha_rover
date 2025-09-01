@@ -1,6 +1,7 @@
 import math
 import struct
 from pathlib import Path
+import pytest
 
 import rclpy
 from sensor_msgs.msg import PointCloud2, PointField
@@ -50,6 +51,7 @@ def read_row_x_values(msg: PointCloud2):
     return xs
 
 
+@pytest.mark.unit
 def test_angle_table_parser_header_csv(tmp_path: Path):
     csv = tmp_path / 'angles.csv'
     csv.write_text('Channel,Vertical_Angle_deg\n1,10\n2,0\n3,20\n')
@@ -57,6 +59,7 @@ def test_angle_table_parser_header_csv(tmp_path: Path):
     assert vals == [10.0, 0.0, 20.0]
 
 
+@pytest.mark.unit
 def test_reorder_and_range_gate(tmp_path: Path):
     # Prepare CSV and YAML config
     csv = tmp_path / 'angles.csv'

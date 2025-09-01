@@ -123,6 +123,16 @@ class AiryReorderNode(Node):
         self._expected_w = int(cfg.get('expected_dims', {}).get('width', 900))
         self._range_min = float(self.get_parameter('range_min_m').get_parameter_value().double_value)
         self._range_max = float(self.get_parameter('range_max_m').get_parameter_value().double_value)
+        # Allow YAML to override range gate bounds if provided
+        try:
+            rg = cfg.get('range_m', {}) if isinstance(cfg, dict) else {}
+            if isinstance(rg, dict):
+                if rg.get('min') is not None:
+                    self._range_min = float(rg['min'])
+                if rg.get('max') is not None:
+                    self._range_max = float(rg['max'])
+        except Exception:
+            pass
         self._range_gate_enabled = bool(self.get_parameter('range_gate_enabled').get_parameter_value().bool_value)
         self._timestamp_policy = (self.get_parameter('timestamp_policy').get_parameter_value().string_value or 'sensor').lower()
         self._backend = (self.get_parameter('backend').get_parameter_value().string_value or 'numpy').lower()

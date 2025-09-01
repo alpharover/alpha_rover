@@ -25,7 +25,6 @@ class AiryModeService(Node):
         self.declare_parameter('network_config', 'alpha_configs/network.yaml')
         self.declare_parameter('http_enabled', False)
         self.declare_parameter('http_timeout_sec', 1.0)
-        self.declare_parameter('http_config_key', 'lidar_airy')
         self.declare_parameter('http_endpoints', '')  # optional direct YAML path, else use config key under alpha_configs/lidar_airy.yaml
         # Optional robustness/observability controls
         self.declare_parameter('verify_after_set', False)

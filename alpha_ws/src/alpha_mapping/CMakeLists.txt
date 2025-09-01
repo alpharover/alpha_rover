@@ -11,7 +11,13 @@ add_executable(nvblox src/nvblox_dummy_node.cpp)
 ament_target_dependencies(nvblox rclcpp sensor_msgs)
 
 add_executable(mapping_node src/mapping_node.cpp)
-ament_target_dependencies(mapping_node rclcpp sensor_msgs alpha_utils)
+ament_target_dependencies(mapping_node rclcpp sensor_msgs alpha_utils pluginlib)
+# Ensure local public headers are visible to dependents and this target
+target_include_directories(mapping_node
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 
 install(TARGETS nvblox
   DESTINATION lib/${PROJECT_NAME}
@@ -23,6 +29,11 @@ install(TARGETS mapping_node
 
 add_library(nvblox_provider SHARED src/nvblox_provider.cpp)
 ament_target_dependencies(nvblox_provider rclcpp sensor_msgs pluginlib)
+target_include_directories(nvblox_provider
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 
 pluginlib_export_plugin_description_file(alpha_mapping plugin_description.xml)
 

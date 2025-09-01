@@ -1,4 +1,6 @@
-<h1 align="center">alpha_rover</h1>
+<p align="center">
+  <img alt="alpha_rover" src="./docs/social_preview.png" width="1000">
+</p>
 
 <p align="center">
   Teleop-first research rover stack with safety and deterministic mapping.

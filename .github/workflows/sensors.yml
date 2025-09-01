@@ -14,10 +14,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: Enforce colcon arg order policy
         run: |
+          # Check only actual colcon build lines, not enforcement lines
           # Must have packages-select before cmake-args
-          grep -nE 'colcon build .*--packages-select .* --cmake-args' .github/workflows/sensors.yml
-          # Must NOT have cmake-args before packages-select
-          if grep -nE 'colcon build .*--cmake-args .* --packages-select' .github/workflows/sensors.yml; then
+          if ! grep -nE '^[[:space:]]*colcon build .*--packages-select .* --cmake-args' .github/workflows/sensors.yml; then
+            echo "::error ::Missing packages-first colcon form in sensors.yml"; exit 1;
+          fi
+          # Must NOT have cmake-args before packages-select on any colcon line
+          if grep -nE '^[[:space:]]*colcon build .*--cmake-args .* --packages-select' .github/workflows/sensors.yml; then
             echo "::error ::Use packages-first colcon form in sensors.yml"; exit 1;
           fi
       - name: Setup ROS 2 apt sources

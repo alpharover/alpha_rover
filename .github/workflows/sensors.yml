@@ -16,7 +16,7 @@ jobs:
         run: |
           # Check only actual colcon build lines, not enforcement lines
           # Must NOT have cmake-args before packages-select on any colcon line
-          if grep -nE '^[[:space:]]*colcon build .*--cmake-args .* --packages-select' .github/workflows/sensors.yml; then
+          if grep -nE '^[[:space:]]*colcon build[[:space:]].*--cmake-args[[:space:]].* --packages-select' .github/workflows/sensors.yml; then
             echo "::error ::Use packages-first colcon form in sensors.yml"; exit 1;
           fi
       - name: Setup ROS 2 apt sources

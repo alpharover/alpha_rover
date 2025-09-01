@@ -118,7 +118,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Work around ROS 2 setup scripts referencing unset vars under -u
+          set +u
           source /opt/ros/humble/setup.bash
+          set -u
           cd "$ALPHA_WS"
           colcon build --merge-install --cmake-args -DCMAKE_BUILD_TYPE=Release
       - name: Validate configs (jsonschema)
@@ -130,11 +133,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          set +u
           source /opt/ros/humble/setup.bash
           cd "$ALPHA_WS"
           if [ -f install/setup.bash ]; then
             source install/setup.bash
           fi
+          set -u
           colcon test --merge-install
           colcon test-result --verbose
       - name: Run unit tests (pytest)
@@ -142,10 +147,12 @@ jobs:
         run: |
           set -euo pipefail
           # Source ROS 2 and the built workspace so generated Python interfaces are importable
+          set +u
           source /opt/ros/humble/setup.bash
           if [ -f alpha_ws/install/setup.bash ]; then
             source alpha_ws/install/setup.bash
           fi
+          set -u
           # Run package unit tests directly with pytest
           python3 -m pytest \
             alpha_ws/src/alpha_lidar_airy/test \

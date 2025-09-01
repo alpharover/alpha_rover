@@ -33,6 +33,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            ros-humble-ros-base \
             build-essential cmake \
             libyaml-cpp-dev \
             ros-humble-rclcpp \
@@ -51,6 +52,9 @@ jobs:
       - name: Build third-party (smoke)
         run: |
           set -e
+          set +u
+          source /opt/ros/humble/setup.bash
+          set -u
           cd alpha_ws
           colcon build --event-handlers console_cohesion+ --packages-up-to rslidar_sdk rslidar_msg || true
       - name: Resolve core workspace deps (smoke)
@@ -59,6 +63,9 @@ jobs:
       - name: Build core LiDAR packages (smoke)
         run: |
           set -e
+          set +u
+          source /opt/ros/humble/setup.bash
+          set -u
           cd alpha_ws
           colcon build --event-handlers console_cohesion+ \
             --packages-up-to alpha_lidar_airy_cpp alpha_lidar_airy alpha_bringup alpha_testing \

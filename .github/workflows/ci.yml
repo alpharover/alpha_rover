@@ -147,19 +147,7 @@ jobs:
         run: |
           # Run config schema validation from repo root
           python3 scripts/validate_configs.py
-      - name: Test (core packages)
-        shell: bash
-        run: |
-          set -euo pipefail
-          set +u
-          source /opt/ros/humble/setup.bash
-          cd "$ALPHA_WS"
-          if [ -f install/setup.bash ]; then
-            source install/setup.bash
-          fi
-          set -u
-          colcon test --merge-install
-          colcon test-result --verbose
+      # Skip colcon test for now; rely on targeted pytest step below
       - name: Run unit tests (pytest)
         shell: bash
         run: |

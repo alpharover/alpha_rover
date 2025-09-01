@@ -137,6 +137,7 @@ jobs:
             ccache-${{ runner.os }}-
       - name: Configure ccache
         run: |
+          mkdir -p ~/.ccache
           echo 'max_size = 2G' > ~/.ccache/ccache.conf
       - name: Resolve ROS package deps (rosdep)
         shell: bash
@@ -268,6 +269,7 @@ jobs:
             ccache-${{ runner.os }}-
       - name: Configure ccache
         run: |
+          mkdir -p ~/.ccache
           echo 'max_size = 2G' > ~/.ccache/ccache.conf
       - name: Resolve mapping deps (rosdep)
         run: |
@@ -356,6 +358,7 @@ jobs:
             ccache-${{ runner.os }}-
       - name: Configure ccache
         run: |
+          mkdir -p ~/.ccache
           echo 'max_size = 2G' > ~/.ccache/ccache.conf
       - name: Resolve deps (workspace)
         run: |

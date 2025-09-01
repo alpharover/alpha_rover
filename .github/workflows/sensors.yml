@@ -61,5 +61,5 @@ jobs:
           set -e
           cd alpha_ws
           colcon build --event-handlers console_cohesion+ \
-            --packages-select alpha_lidar_airy_cpp alpha_lidar_airy alpha_bringup alpha_testing \
+            --packages-up-to alpha_lidar_airy_cpp alpha_lidar_airy alpha_bringup alpha_testing \
             --cmake-args -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON

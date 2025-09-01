@@ -1,11 +1,33 @@
-# ALPHA Rover Stack
+<h1 align="center">alpha_rover</h1>
 
-> Operator‑first tele‑operation with robust comms, safety, and mapping — autonomy added incrementally (Teach‑&‑Repeat RTH, then Docking).
+<p align="center">
+  Teleop-first research rover stack with safety and deterministic mapping.
+  <br/>
+  Modular autonomy layered on a robust operator-first backbone.
+  <br/>
+  <code>alpha_rover</code>
+</p>
 
-[![ROS 2](https://img.shields.io/badge/ROS%202-Humble-22314E)](https://docs.ros.org/en/humble/)
+<p align="center">
+  <a href="https://docs.ros.org/en/humble/"><img alt="ROS 2 Humble" src="https://img.shields.io/badge/ROS%202-Humble-22314E"></a>
+  <img alt="Ubuntu 22.04" src="https://img.shields.io/badge/Ubuntu-22.04-E95420">
+  <img alt="Jetson Orin" src="https://img.shields.io/badge/Jetson-Orin-76B900">
+  <a href="LICENSE"><img alt="License Apache-2.0" src="https://img.shields.io/badge/license-Apache%202.0-blue"></a>
+  <img alt="Status: alpha" src="https://img.shields.io/badge/status-alpha-orange">
+  <img alt="Version: v2.3" src="https://img.shields.io/badge/version-v2.3-6A5ACD">
+  <a href="https://github.com/alpharover/alpha_rover/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/alpharover/alpha_rover/actions/workflows/ci.yml/badge.svg?branch=trunk"></a>
+  <a href="https://github.com/alpharover/alpha_rover/actions/workflows/sensors.yml"><img alt="Sensors CI" src="https://github.com/alpharover/alpha_rover/actions/workflows/sensors.yml/badge.svg?branch=trunk"></a>
+</p>
 
-
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
+<p align="center">
+  <a href="./ALPHA_Software_Roadmap_v2.3.md">Roadmap</a> •
+  <a href="./docs/AGENTS_INDEX.md">Docs Index</a> •
+  <a href="./alpha_ws/src">Workspace</a> •
+  <a href="./alpha_configs">Configs</a> •
+  <a href="./docs/PROGRESS.md">Progress</a> •
+  <a href="./SECURITY.md">Security Policy</a> •
+  <a href="./CITATION.cff">Cite</a>
+</p>
 
 ---
 
@@ -16,11 +38,11 @@
 - [Hardware Baseline](#hardware-baseline)
 - [Repository Layout](#repository-layout)
 - [Quick Start](#quick-start)
+- [Docs for Agents](#docs-for-agents)
 - [Configuration](#configuration)
 - [Run \& Observe](#run--observe)
 - [Testing](#testing)
 - [Security \& OTA](#security--ota)
-- [Docs for Agents](#docs-for-agents)
 - [Contributing](#contributing)
 - [License](#license)
 - [Citation \& Acknowledgments](#citation--acknowledgments)
@@ -127,8 +149,8 @@ docs/                     # AGENTS chain, style, indices
 ### 2) Clone & build (from source)
 
 ```bash
-# Clone (adjust for your org/repo)
-git clone https://github.com/ORG/REPO.git alpha_rover
+# Clone
+git clone https://github.com/alpharover/alpha_rover.git alpha_rover
 cd alpha_rover
 
 # ROS 2 workspace
@@ -143,6 +165,24 @@ source install/setup.bash
 ```
 
 > Jetson builds should use JetPack 6.x and the NVIDIA Container Runtime if running NVBlox in containers.
+
+---
+
+## Docs for Agents
+
+This repo maintains a chain of `AGENTS.md` files so a new agent (human or LLM) can ramp quickly.
+
+- Template: `docs/AGENTS_TEMPLATE.md`
+- Style: `docs/AGENTS_STYLE.md`
+- Index (generated): `docs/AGENTS_INDEX.md`
+- UI parameters (brainstorming): `docs/ui_parameters.md`
+- Scripts:
+  ```bash
+  python3 scripts/agents_validate.py .         # validate front-matter
+  python3 scripts/agents_index.py . docs/AGENTS_INDEX.md
+  ```
+
+Each component’s `AGENTS.md` includes interfaces, runbooks, observability, tests, and links to code/config.
 
 ---
 
@@ -166,11 +206,12 @@ fov:
   min_angle_below_zero_elevation_rad: -0.001
   max_angle_above_zero_elevation_rad: 1.5707963
 range_m: { min: 0.10, max: 60.0 }
+```
 
 Optional HTTP control (Run/Standby)
 - The mode service can toggle AIRY operation mode via HTTP. Default is dry‑run (`http_enabled:=false`).
 - To enable HTTP and verify, run:
-```
+```bash
 ros2 run alpha_lidar_airy mode_service_node \
   --ros-args \
   -p network_config:=alpha_configs/network.yaml \
@@ -180,7 +221,6 @@ ros2 run alpha_lidar_airy mode_service_node \
   -p http_backoff_ms:=200
 ```
 - You can optionally set `airy_http.enabled: true` in `alpha_configs/lidar_airy.yaml` and fill per‑device endpoints; otherwise the node uses the legacy endpoints and UI fallback.
-```
 
 ### Mapping provider (`mapping_provider.yaml`)
 ```yaml
@@ -255,25 +295,9 @@ CI will validate `alpha_configs` against JSON Schemas and run component tests as
 - **WireGuard** for remote operations.
 - **Read‑only rootfs** profiles where feasible.
 
+See the Security Policy for private vulnerability reporting: [SECURITY.md](./SECURITY.md).
+
 > Details and acceptance criteria are specified in the roadmap (Phase 14).
-
----
-
-## Docs for Agents
-
-This repo maintains a **chain of `AGENTS.md` files** so a new agent (human or LLM) can ramp quickly.
-
-- Template: `docs/AGENTS_TEMPLATE.md`
-- Style: `docs/AGENTS_STYLE.md`
-- Index (generated): `docs/AGENTS_INDEX.md`
-- UI parameters (brainstorming): `docs/ui_parameters.md`
-- Scripts:
-  ```bash
-  python3 scripts/agents_validate.py .         # validate front-matter
-  python3 scripts/agents_index.py . docs/AGENTS_INDEX.md
-  ```
-
-Each component’s `AGENTS.md` includes interfaces, runbooks, observability, tests, and links to code/config.
 
 ---
 
@@ -300,6 +324,8 @@ See [`LICENSE`](./LICENSE) for the full text. Contributions are accepted under t
 - Built on **ROS 2 Humble**, **NVIDIA Isaac ROS**, **NVBlox**, and **OpenCV** ecosystems.
 - RoboSense AIRY and Luxonis OAK‑D devices used in hardware validation.
 - See `ALPHA_Software_Roadmap_v2.3.md` for references and design decisions.
+
+For citation, see [CITATION.cff](./CITATION.cff) or use GitHub’s “Cite this repository”.
 
 ---
 
@@ -330,6 +356,8 @@ See [`LICENSE`](./LICENSE) for the full text. Contributions are accepted under t
 - `alpha_configs/` — validated YAML configs and example schemas.
 - `deploy/` — A/B compose and deployment artifacts (skeleton).
 - `docs/` — documentation kit, schema, index, and project progress log.
+  - Social preview image: `docs/social_preview.png` (upload in GitHub → Settings → Social preview)
+  - Topics helper: `scripts/set_github_topics.sh` (requires `gh` CLI)
 
 ### Contributing & Conduct
 - See `CONTRIBUTING.md` for workflow, branching, and code style.

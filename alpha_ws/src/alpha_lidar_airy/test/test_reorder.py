@@ -79,6 +79,7 @@ def test_reorder_and_range_gate(tmp_path: Path):
     rclpy.init(args=[
         '--ros-args',
         '-p', f'config:={str(yaml)}',
+        '-p', 'range_gate_enabled:=true',
         '-p', 'strict:=true',
         '-p', 'input_front_topic:=/ignore',
         '-p', 'input_rear_topic:=/ignore',

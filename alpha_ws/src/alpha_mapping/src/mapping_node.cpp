@@ -133,12 +133,12 @@ public:
     std::string plugin_name = this->get_parameter("provider_plugin").as_string();
     try {
       loader_ = std::make_shared<pluginlib::ClassLoader<IMappingProvider>>("alpha_mapping", "alpha_mapping::IMappingProvider");
-      provider_.reset(loader_->createSharedInstance(plugin_name));
+      provider_ = loader_->createSharedInstance(plugin_name);
       provider_->configure(this);
       RCLCPP_INFO(this->get_logger(), "Loaded provider plugin: %s", plugin_name.c_str());
     } catch (const std::exception &e) {
       RCLCPP_WARN(this->get_logger(), "Failed to load provider plugin '%s': %s. Using DummyProvider.", plugin_name.c_str(), e.what());
-      provider_.reset(new DummyProvider());
+      provider_ = std::make_shared<DummyProvider>();
       provider_->configure(this);
     }
 
@@ -178,7 +178,7 @@ public:
   }
 
 private:
-  std::unique_ptr<IMappingProvider> provider_;
+  std::shared_ptr<IMappingProvider> provider_;
   std::vector<rclcpp::Subscription<PointCloud2>::SharedPtr> subs_;
   std::shared_ptr<pluginlib::ClassLoader<IMappingProvider>> loader_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr status_pub_;

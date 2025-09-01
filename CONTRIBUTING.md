@@ -24,12 +24,24 @@ ros2 launch alpha_bringup startup.launch.py
 ```
 
 ## Tests & checks
-- **Unit/integration tests:** add or update tests that match acceptance criteria in the roadmap.
+- **Test policy (CI v1.0):**
+  - Mark every test with `@pytest.mark.unit` or `@pytest.mark.integration`.
+  - Core CI gates on unit tests only: `pytest -m unit`.
+  - Integration tests run non‑gating on changes/nightly: `pytest -m integration`.
+  - Mapping package (`alpha_mapping`) builds in a separate non‑gating job; logs are uploaded.
+  - Promotion rule: after 7 consecutive green mapping+integration runs (or 1 week), they may be moved back into gating.
+- **Local quick checks:**
+  - `python3 -m pytest -m unit -q`
+  - `python3 scripts/validate_configs.py` (schema check)
 - **Docs validation:** run the AGENTS tooling.
 ```bash
 python3 scripts/agents_validate.py .
-python3 scripts/agents_index.py . docs/AGENTS_INDEX.md
+AGENTS_INDEX_NO_DATE=1 python3 scripts/agents_index.py . docs/AGENTS_INDEX.md
 ```
+
+## CI guardrails
+- Sensors workflow enforces “packages‑first” `colcon build` usage; avoid `--cmake-args` before `--packages-select`.
+- CI uses apt retries, rosdep metadata caching, and ccache; see `.github/workflows/` for details.
 
 ## Commit & PR style
 - Use clear, descriptive titles.

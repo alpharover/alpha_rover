@@ -99,3 +99,12 @@ Artifacts and decisions are linked from AGENTS docs where relevant.
 - PR housekeeping:
   - Merged: #12 (schema+config), #13 (mode_service verify/retry), #14 (`airy_http` support), #15 (remove unused param + docs).
   - Closed superseded PR #10 (docs-index stability) after policy PR merged.
+
+## 2025-09-01 — CI stabilization & Test Policy v1.0
+- Finalized CI split and caching:
+  - Core: build full workspace excluding `alpha_mapping`; gate on `pytest -m unit` only.
+  - Non‑gating: mapping build on changes/nightly with artifacts; integration tests via `pytest -m integration`.
+  - Added apt retries, rosdep metadata cache, and ccache across all jobs.
+  - Enforced pytest markers; relaxed sensors enforcement to forbid only `--cmake-args` before `--packages-select`.
+- Fixed unit test flake by honoring YAML `range_m` bounds in `alpha_lidar_airy` reorder node.
+- Policy: after 7 consecutive green mapping+integration runs (or 1 week), propose re‑gating.

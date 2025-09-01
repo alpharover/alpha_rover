@@ -284,7 +284,13 @@ Acceptance tests mirror real‑world operations. Examples:
 - **NVBlox Parameter Sanity:** Accepts dims/FOV; drops out‑of‑range points.
 - **Startup Sequencer:** NVBlox starts ≥10 s after RUN; status transitions visible.
 
-CI will validate `alpha_configs` against JSON Schemas and run component tests as they land.
+CI validates `alpha_configs` against JSON Schemas and runs tests per policy.
+
+### CI Policy (v1.0)
+- Core build gates on unit tests only: `pytest -m unit` (no generic `colcon test`).
+- Mapping build runs separately (non‑gating) on changes/nightly; artifacts uploaded.
+- Integration tests run separately (non‑gating) via `pytest -m integration` on changes/nightly.
+- Promotion: after 7 consecutive green mapping+integration runs (or 1 week), they may be moved back into gating.
 
 ---
 

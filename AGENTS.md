@@ -3,7 +3,7 @@ agent: "alpha_project_root"
 component_type: "docs"
 status: "alpha"
 version: "v2.3"
-updated: "2025-08-30"
+updated: "2025-09-01"
 owner: "Tim"
 links:
   roadmap: "./ALPHA_Software_Roadmap_v2.3.md"
@@ -56,3 +56,10 @@ notes: >
 # ALPHA Project — AGENTS Overview
 
 This file anchors the "chain of agents" documentation set. See `docs/AGENTS_INDEX.md` for the generated index of all components.
+
+## Upcoming Integration (Next Session)
+- Platform: Leo Rover v1.8 (RPi4/5, Ubuntu 22.04, ROS 2 Humble)
+- Plan: add adapter under `alpha_ws/src/alpha_platforms/leo_rover/` with launch/config to normalize topics/TF to `/alpha/...` contracts; wire into `alpha_bringup` behind a flag.
+- Networking: direct Ethernet Jetson↔RPi, aligned `RMW_IMPLEMENTATION` and `ROS_DOMAIN_ID`; consider DDS discovery server if multicast is unreliable.
+- Time sync: chrony/PTP (Jetson master, RPi client).
+- Tracking: see `docs/PROGRESS.md` and README (CI Policy v1.0). Architect prompt prepared; pending guidance.

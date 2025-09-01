@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="alpha_rover" src="./docs/social_preview.png" width="1000">
+  <img alt="alpha_rover banner" src="./docs/readme_banner.png" width="1000">
 </p>
 
 <p align="center">

@@ -166,6 +166,20 @@ fov:
   min_angle_below_zero_elevation_rad: -0.001
   max_angle_above_zero_elevation_rad: 1.5707963
 range_m: { min: 0.10, max: 60.0 }
+
+Optional HTTP control (Run/Standby)
+- The mode service can toggle AIRY operation mode via HTTP. Default is dry‑run (`http_enabled:=false`).
+- To enable HTTP and verify, run:
+```
+ros2 run alpha_lidar_airy mode_service_node \
+  --ros-args \
+  -p network_config:=alpha_configs/network.yaml \
+  -p http_enabled:=true \
+  -p verify_after_set:=true \
+  -p http_retries:=1 \
+  -p http_backoff_ms:=200
+```
+- You can optionally set `airy_http.enabled: true` in `alpha_configs/lidar_airy.yaml` and fill per‑device endpoints; otherwise the node uses the legacy endpoints and UI fallback.
 ```
 
 ### Mapping provider (`mapping_provider.yaml`)

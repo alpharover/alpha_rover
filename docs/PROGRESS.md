@@ -109,3 +109,4 @@ Artifacts and decisions are linked from AGENTS docs where relevant.
 - Fixed unit test flake by honoring YAML `range_m` bounds in `alpha_lidar_airy` reorder node.
 - Policy: after 7 consecutive green mapping+integration runs (or 1 week), propose re‑gating.
 - 2025-09-03T06:26:35Z: Platform LAN -> 192.168.50.0/24; Fast DDS discovery server enabled (systemd) on Jetson; chrony serving; Leo adapter launched; RPi discovery/chrony pointed to Jetson wired; initial cross-host ROS verified.
+- 2025-09-03T03:44:33-05:00: Multicast A/B test passed; standardized on /usr/bin/fastdds; server-mode env applied across Jetson+Pi; CLI checks use --no-daemon.

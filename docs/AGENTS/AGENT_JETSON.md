@@ -59,3 +59,10 @@
 - A/B: Multicast shows full graph; server-mode works for local pub/sub (talker<->listener). `ros2 topic list --no-daemon` may not enumerate under server-mode (CLI quirk), but data flow is OK.
 - Cross-host: smoke passed using multicast (Jetson talker → Pi echo); server-mode cross-host pending CLI introspection alignment on Pi.
 - Next: keep server enabled; retest Pi echo with server-mode after ensuring SSH key auth and matching server env; then exercise talker/echo both directions.
+## Day-3 (server-mode smoke)
+2025-09-03T16:04:06-05:00
+- UDP/11811:   UNCONN 0      0                          0.0.0.0:11811      0.0.0.0:*                                              
+- Heartbeat one-shot: attempted
+- Remote /chatter echo from RPi: attempted
+- Camera bridge: probed (if present)
+

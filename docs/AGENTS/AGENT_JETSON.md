@@ -22,3 +22,11 @@
 
 ## 2025-09-03T09:02:15Z — NAT restore for RPi via Jetson
 - Enabled ip_forward=1; added MASQUERADE from 192.168.50.0/24 -> wlP1p1s0; FORWARD rules eno1<->wlP1p1s0
+## 2025-09-03T04:13:44-05:00 — Session summary
+- Wired: eno1=192.168.50.10/24 (persistent via NetworkManager)
+- Discovery: service present; standardized on /usr/bin/fastdds discovery (verify UDP/11811 next session); earlier fast-discovery-server instance confirmed on UDP/11811
+- ROS env: persisted in ~/.bashrc (DOMAIN_ID=42, RMW=rmw_fastrtps_cpp, LOCALHOST_ONLY=0, DISCOVERY_SERVER=127.0.0.1:11811); use --no-daemon for CLI due to daemon env quirk
+- Adapter: running in tmux (adapter); config loaded; heartbeat topic created; multicast A/B test showed /alpha/health/adapter_alive and echo worked
+- Cross-host: server-mode echo pending; multicast echo on RPi initially blocked by PATH but NAT/DNS fixed; will re-run with explicit ROS setup
+- NAT: restored Jetson Internet sharing to Pi (ip_forward=1, MASQUERADE 192.168.50.0/24->wlP1p1s0, FORWARD rules); persisted; Pi DNS set via resolvectl (1.1.1.1, 8.8.8.8)
+- Next: re-verify UDP/11811 with new unit, relaunch adapter + ros2 daemon under server-mode, run talker→RPi echo with --no-daemon

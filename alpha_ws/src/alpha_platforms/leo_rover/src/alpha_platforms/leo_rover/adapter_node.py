@@ -164,7 +164,14 @@ class LeoAdapter(Node):
         self.bridges = [Bridge(self, m) for m in configured]
 
         # Heartbeat
-        self.hb = self.create_publisher(Bool, '/alpha/health/adapter_alive', QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE))
+        # Publish heartbeat under this node's namespace (alpha/health/adapter_alive)
+        self.hb = self.create_publisher(Bool, 'health/adapter_alive', QoSProfile(depth=1, reliability=ReliabilityPolicy.RELIABLE))
+        self.get_logger().info(f"Node NS={self.get_namespace()} name={self.get_name()} — heartbeat topic=/{self.get_namespace().strip('/')}/health/adapter_alive")
+        # Publish once immediately so the topic appears quickly
+        try:
+            self.hb.publish(Bool(data=True))
+        except Exception:
+            pass
         self.create_timer(1.0, lambda: self.hb.publish(Bool(data=True)))
         self.get_logger().info(f"Loaded config: {cfg_path}; active bridges={len(self.bridges)}")
 

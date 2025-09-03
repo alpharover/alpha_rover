@@ -20,3 +20,5 @@
 - heartbeat: MISSING — WARNING: topic [/alpha/health/adapter_alive] does not appear to be published yet
 - cross-host: failed — pi@192.168.50.1: Permission denied (publickey,password).
 
+## 2025-09-03T09:02:15Z — NAT restore for RPi via Jetson
+- Enabled ip_forward=1; added MASQUERADE from 192.168.50.0/24 -> wlP1p1s0; FORWARD rules eno1<->wlP1p1s0

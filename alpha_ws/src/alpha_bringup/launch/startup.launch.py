@@ -1,7 +1,10 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.substitutions import FindPackageShare
 import os
 
 
@@ -19,8 +22,18 @@ def _abs(path: str) -> str:
 
 def generate_launch_description():
     config_dir = LaunchConfiguration('config_dir')
+    enable_leo = LaunchConfiguration('enable_leo_rover_adapter')
+    leo_cfg = LaunchConfiguration('leo_mapping_config')
     return LaunchDescription([
         DeclareLaunchArgument('config_dir', default_value='alpha_configs'),
+        # Leo Rover platform adapter toggle (disabled by default)
+        DeclareLaunchArgument('enable_leo_rover_adapter', default_value='false'),
+        DeclareLaunchArgument(
+            'leo_mapping_config',
+            default_value=PathJoinSubstitution([
+                FindPackageShare('alpha_platforms_leo_rover'), 'config', 'leo_rover.yaml'
+            ]),
+        ),
 
         # Config Manager: serves /alpha/config/get
         Node(
@@ -241,5 +254,18 @@ def generate_launch_description():
                 'env_file': 'deploy/IMAGES.lock',
             }],
             output='screen',
+        ),
+
+        # Optional: Leo Rover adapter (bridges topics and publishes adapter_alive)
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('alpha_platforms_leo_rover'),
+                    'launch',
+                    'leorover_adapter.launch.py',
+                ])
+            ),
+            launch_arguments={'mapping_config': leo_cfg}.items(),
+            condition=IfCondition(enable_leo),
         ),
 ])

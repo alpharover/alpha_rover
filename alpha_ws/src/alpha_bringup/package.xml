@@ -13,6 +13,8 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>alpha_utils</exec_depend>
   <exec_depend>python3-yaml</exec_depend>
+  <!-- Optional integration: Leo Rover platform adapter launch -->
+  <exec_depend>alpha_platforms_leo_rover</exec_depend>
 
   <export>
     <build_type>ament_python</build_type>

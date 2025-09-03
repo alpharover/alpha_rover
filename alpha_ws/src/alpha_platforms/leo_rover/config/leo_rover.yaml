@@ -1,0 +1,6 @@
+mappings:
+  - type: geometry_msgs/msg/Twist
+    in:  /alpha/cmd_vel
+    out: /cmd_vel
+    in_qos: RELIABLE
+    out_qos: RELIABLE

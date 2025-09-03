@@ -110,3 +110,4 @@ Artifacts and decisions are linked from AGENTS docs where relevant.
 - Policy: after 7 consecutive green mapping+integration runs (or 1 week), propose re‑gating.
 - 2025-09-03T06:26:35Z: Platform LAN -> 192.168.50.0/24; Fast DDS discovery server enabled (systemd) on Jetson; chrony serving; Leo adapter launched; RPi discovery/chrony pointed to Jetson wired; initial cross-host ROS verified.
 - 2025-09-03T03:44:33-05:00: Multicast A/B test passed; standardized on /usr/bin/fastdds; server-mode env applied across Jetson+Pi; CLI checks use --no-daemon.
+- 2025-09-03T19:26:27Z: Day2 bring-up — discovery server on UDP/11811 (systemd), CLI no-daemon, adapter running (tmux: adapter); cross-host smoke passed (multicast). Server-mode enabled; CLI introspection quirk under investigation.

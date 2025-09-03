@@ -5,3 +5,8 @@
 - Adapter: alpha_platforms_leo_rover running (tmux: adapter)
 - /alpha/: heartbeat present; Odom/Camera bridged if available
 
+## 2025-09-03T07:01:25Z — Platform bring-up (stabilization)
+- Discovery: UDP/11811 active; env set (server=127.0.0.1:11811)
+- ROS 2 daemon: restarted for CLI discovery
+- Adapter: relaunched in tmux (adapter); heartbeat checked
+- Cross-host: talker started; RPi echo attempted

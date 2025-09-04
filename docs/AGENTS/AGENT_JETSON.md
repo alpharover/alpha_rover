@@ -86,3 +86,11 @@
 ## 2025-09-04T00:00:00Z — SCO (single-controller) tests
 - smoke_chatter: pass — armed Pi via SSH on `/alpha/test/chatter` (std_msgs/msg/String, RELIABLE), started `talker_jetson` for ~12 s; Pi printed first message and `::RPI_READY::`.
 - heartbeat: pass — armed Pi via SSH on `/alpha/health/adapter_alive` (std_msgs/msg/Bool, BEST_EFFORT); adapter under Domain 42/server-mode; Pi printed `data: true` and `::RPI_READY::`.
+
+## 2025-09-04T05:20:00Z — Camera bridge + services + compile
+- Camera bridge: Added explicit mappings in `alpha_platforms_leo_rover/config/leo_rover.yaml`:
+  - `/camera/image_raw` → `/alpha/camera/front/image` (sensor_msgs/Image, SENSOR_DATA/BEST_EFFORT).
+  - `/camera/camera_info` → `/alpha/camera/front/camera_info` (sensor_msgs/CameraInfo, RELIABLE).
+- Validation: Pi remote listeners (BEST_EFFORT for Image, RELIABLE for CameraInfo) each captured one message via the `/alpha/camera/front/*` aliases.
+- Services: Installed `alpha-adapter.service` (systemd) with env file `/etc/alpha/ros.env` (Domain 42 + discovery server). Unit starts after `fastdds-discovery.service` and `network-online` and publishes heartbeat.
+- Compile: Built `alpha_platforms_leo_rover` on Jetson from workspace to validate host build path (no Pi-only packages to rescue; NFS shows same set on Pi/Jetson).

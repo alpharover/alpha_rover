@@ -4,3 +4,13 @@ mappings:
     out: /cmd_vel
     in_qos: RELIABLE
     out_qos: RELIABLE
+  - type: sensor_msgs/msg/Image
+    in:  /camera/image_raw
+    out: /alpha/camera/front/image
+    in_qos: SENSOR_DATA
+    out_qos: SENSOR_DATA
+  - type: sensor_msgs/msg/CameraInfo
+    in:  /camera/camera_info
+    out: /alpha/camera/front/camera_info
+    in_qos: RELIABLE
+    out_qos: RELIABLE

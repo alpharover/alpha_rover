@@ -82,3 +82,7 @@
 - smoke_chatter: producer `demo_nodes_cpp/talker` remapped to `/alpha/test/chatter`, node name `talker_jetson`; Pi captured and reported done=pass.
 - heartbeat: verified local echo (`std_msgs/msg/Bool`) and Pi reported done=pass.
 - Node list shows no duplicate‑name warnings on Jetson.
+
+## 2025-09-04T00:00:00Z — SCO (single-controller) tests
+- smoke_chatter: pass — armed Pi via SSH on `/alpha/test/chatter` (std_msgs/msg/String, RELIABLE), started `talker_jetson` for ~12 s; Pi printed first message and `::RPI_READY::`.
+- heartbeat: pass — armed Pi via SSH on `/alpha/health/adapter_alive` (std_msgs/msg/Bool, BEST_EFFORT); adapter under Domain 42/server-mode; Pi printed `data: true` and `::RPI_READY::`.

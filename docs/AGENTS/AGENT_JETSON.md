@@ -66,3 +66,11 @@
 - Remote /chatter echo from RPi: attempted
 - Camera bridge: probed (if present)
 
+## 2025-09-03T21:24:00Z — Heartbeat proven (server-mode)
+- Invariants enforced: `ROS_DOMAIN_ID=42`, `RMW_IMPLEMENTATION=rmw_fastrtps_cpp`, `ROS_LOCALHOST_ONLY=0`, `ROS2CLI_NO_DAEMON=1`.
+- Discovery server kept as‑is on UDP/11811 (`ROS_DISCOVERY_SERVER=127.0.0.1:11811` on Jetson; Pi uses `192.168.50.10:11811`).
+- Adapter env: tmux `adapter` inherits env; `/alpha/leorover_adapter` running.
+- Local proof: `ros2 topic echo --once /alpha/health/adapter_alive std_msgs/msg/Bool` → `data: true`.
+- Cross‑host proof: announced 15–45s “HEARTBEAT WINDOW” intervals; Pi echoed once using:
+  `ROS_DOMAIN_ID=42 RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_LOCALHOST_ONLY=0 ROS2CLI_NO_DAEMON=1 ROS_DISCOVERY_SERVER=192.168.50.10:11811 ros2 topic echo --once /alpha/health/adapter_alive std_msgs/msg/Bool`.
+- Result: pass. No binary swaps; explicit type on echo used for reliability.

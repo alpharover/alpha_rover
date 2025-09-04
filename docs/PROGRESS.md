@@ -112,3 +112,4 @@ Artifacts and decisions are linked from AGENTS docs where relevant.
 - 2025-09-03T03:44:33-05:00: Multicast A/B test passed; standardized on /usr/bin/fastdds; server-mode env applied across Jetson+Pi; CLI checks use --no-daemon.
 - 2025-09-03T19:26:27Z: Day2 bring-up — discovery server on UDP/11811 (systemd), CLI no-daemon, adapter running (tmux: adapter); cross-host smoke passed (multicast). Server-mode enabled; CLI introspection quirk under investigation.
 2025-09-03T16:04:06-05:00 — Day-3: server-mode smoke executed (Jetson). See AGENT_JETSON.md.
+2025-09-03T21:24:00Z — Jetson: adapter heartbeat proven locally and by Pi via discovery server; docs updated.

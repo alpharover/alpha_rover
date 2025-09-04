@@ -116,3 +116,4 @@ Artifacts and decisions are linked from AGENTS docs where relevant.
 2025-09-03T22:10:00Z — Jetson: handshake coordinator added; dupes cleaned (RSP renamed); smoke_chatter and heartbeat passed under control topics; docs updated.
 2025-09-04T00:00:00Z — Jetson SCO: smoke=pass; heartbeat=pass; Pi armed via SSH, both tests observed and logged.
 2025-09-04T05:20:00Z — Camera bridge mapped (/alpha/camera/front/*), validated via Pi; adapter moved under systemd; adapter builds on Jetson; docs updated.
+2025-09-04T05:25:00Z — Session wrap-up: discovery/server-mode steady; adapter under systemd; camera aliases validated; NFSv4 mounted; snapshot + nightly sync armed; handshake tests pass.

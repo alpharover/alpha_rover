@@ -94,3 +94,12 @@
 - Validation: Pi remote listeners (BEST_EFFORT for Image, RELIABLE for CameraInfo) each captured one message via the `/alpha/camera/front/*` aliases.
 - Services: Installed `alpha-adapter.service` (systemd) with env file `/etc/alpha/ros.env` (Domain 42 + discovery server). Unit starts after `fastdds-discovery.service` and `network-online` and publishes heartbeat.
 - Compile: Built `alpha_platforms_leo_rover` on Jetson from workspace to validate host build path (no Pi-only packages to rescue; NFS shows same set on Pi/Jetson).
+
+## 2025-09-04T05:25:00Z — Session wrap-up (status)
+- Invariants: Domain 42; Fast DDS discovery server at `127.0.0.1:11811` (Jetson) and `192.168.50.10:11811` (Pi); `ROS2CLI_NO_DAEMON=1` for checks.
+- Services: `fastdds-discovery.service` enabled; `alpha-adapter.service` enabled (Restart=on-failure). Heartbeat `/alpha/health/adapter_alive` one‑shot echo works.
+- Camera bridge: `/camera/image_raw` → `/alpha/camera/front/image` (BEST_EFFORT); `/camera/camera_info` → `/alpha/camera/front/camera_info` (RELIABLE). Pi confirmed one Image and one CameraInfo via aliases.
+- Handshake tests: Coordinator + Pi remote listener pattern active (subscribe first → publish). `smoke_chatter` and `heartbeat` pass.
+- NFSv4: Pi export mounted at `/mnt/pi/alpha_rover` (rw). UID/GID aligned (1000:1000). Create/delete verified cross‑host.
+- Backups: Snapshot seeded under `~/alpha_rover/backups/pi-YYYYMMDD/` with SHA256 manifest; nightly sync timer `pi-backup.timer` armed (03:15).
+- Compile: Jetson builds adapter package from workspace; ready to extend to rescued packages if needed.

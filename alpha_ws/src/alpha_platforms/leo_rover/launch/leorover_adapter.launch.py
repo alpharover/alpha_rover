@@ -15,8 +15,9 @@ def generate_launch_description():
     urdf = PathJoinSubstitution([FindPackageShare('alpha_platforms_leo_rover'),
                                  'urdf','leo_rover_min.urdf.xacro'])
 
+    # Use a unique node name to avoid cross-host duplicates
     rsp = Node(package='robot_state_publisher', executable='robot_state_publisher',
-               name='robot_state_publisher',
+               name='robot_state_publisher_jetson',
                parameters=[{'robot_description': Command(['xacro ', urdf])}],
                output='screen')
 
@@ -26,4 +27,3 @@ def generate_launch_description():
                    namespace='alpha')
 
     return LaunchDescription([cfg_arg, rsp, adapter])
-

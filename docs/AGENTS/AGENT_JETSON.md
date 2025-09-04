@@ -74,3 +74,11 @@
 - Cross‑host proof: announced 15–45s “HEARTBEAT WINDOW” intervals; Pi echoed once using:
   `ROS_DOMAIN_ID=42 RMW_IMPLEMENTATION=rmw_fastrtps_cpp ROS_LOCALHOST_ONLY=0 ROS2CLI_NO_DAEMON=1 ROS_DISCOVERY_SERVER=192.168.50.10:11811 ros2 topic echo --once /alpha/health/adapter_alive std_msgs/msg/Bool`.
 - Result: pass. No binary swaps; explicit type on echo used for reliability.
+
+## 2025-09-03T22:10:00Z — Coordinator + Clean Sweep
+- Control topics (RELIABLE + TRANSIENT_LOCAL): `/alpha/test/announce`, `/alpha/test/ready`, `/alpha/test/go`, `/alpha/test/done` (std_msgs/String, JSON: id/name/status).
+- Coordinator: `alpha_rover/scripts/jetson_coordinator.py` announces → waits for ready → sends go → runs producer → publishes done.
+- Dupes cleanup: killed stray demo `talker`s; renamed adapter’s `robot_state_publisher` to `robot_state_publisher_jetson` in `alpha_platforms_leo_rover/launch/leorover_adapter.launch.py` to avoid cross‑host duplicate names.
+- smoke_chatter: producer `demo_nodes_cpp/talker` remapped to `/alpha/test/chatter`, node name `talker_jetson`; Pi captured and reported done=pass.
+- heartbeat: verified local echo (`std_msgs/msg/Bool`) and Pi reported done=pass.
+- Node list shows no duplicate‑name warnings on Jetson.

@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 from pathlib import Path
 
 package_name = 'alpha_platforms_leo_rover'
@@ -17,11 +17,17 @@ data_files += files_in('launch')
 data_files += files_in('config')
 data_files += files_in('urdf')
 
+# Explicit packages to avoid namespace/distribution resolution issues
+packages = [
+    'alpha_platforms',
+    'alpha_platforms.leo_rover',
+]
+
 setup(
     name=package_name,
     version='0.1.0',
-    packages=find_packages(where='src'),
-    package_dir={'': 'src'},
+    packages=packages,
+    package_dir={'alpha_platforms': 'src/alpha_platforms'},
     data_files=data_files,
     install_requires=['setuptools', 'PyYAML'],
     zip_safe=True,
@@ -33,4 +39,3 @@ setup(
         'leorover_adapter_node=alpha_platforms.leo_rover.adapter_node:main',
     ]},
 )
-

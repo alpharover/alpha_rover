@@ -9,6 +9,9 @@ run/
 *.log
 *.pid
 
+# Local snapshots and device backups
+backups/
+
 # Python cache
 __pycache__/
 *.pyc

@@ -140,6 +140,18 @@ def main():
     node = Coordinator()
     # Determine which test(s)
     tests = ['smoke_chatter', 'heartbeat']
+    if len(sys.argv) > 1:
+        aliases = {
+            'smoke': 'smoke_chatter',
+            'smoke_chatter': 'smoke_chatter',
+            'heartbeat': 'heartbeat',
+        }
+        sel = []
+        for a in sys.argv[1:]:
+            if a in aliases:
+                sel.append(aliases[a])
+        if sel:
+            tests = sel
     all_pass = True
 
     # Pre-clean: kill stray talkers; ensure at most one robot_state_publisher

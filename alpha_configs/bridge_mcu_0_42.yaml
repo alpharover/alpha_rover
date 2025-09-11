@@ -1,0 +1,23 @@
+name: alpha_mcu_bridge
+from_domain: 0
+to_domain: 42
+topics:
+  firmware/wheel_odom:
+    type: leo_msgs/msg/WheelOdom
+  firmware/wheel_states:
+    type: leo_msgs/msg/WheelStates
+  firmware/battery:
+    type: std_msgs/msg/Float32
+  firmware/battery_averaged:
+    type: std_msgs/msg/Float32
+  firmware/relay_ch1_state:
+    type: std_msgs/msg/Bool
+  firmware/relay_ch2_state:
+    type: std_msgs/msg/Bool
+  firmware/relay_ch3_state:
+    type: std_msgs/msg/Bool
+  firmware/relay_ch4_state:
+    type: std_msgs/msg/Bool
+  cmd_vel:
+    type: geometry_msgs/msg/Twist
+    reversed: True

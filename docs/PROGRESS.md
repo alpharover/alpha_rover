@@ -162,3 +162,5 @@ Artifacts and decisions are linked from AGENTS docs where relevant.
   2) Base motion: confirm the MCU’s velocity command topic; if not `/cmd_vel`, retarget relay; otherwise investigate firmware subscription enable/health.
   3) Unify Foxglove endpoint: either keep RPi as primary bridge or run Jetson bridge as aggregator once discovery is finalized.
   4) Remove temporary beacon once Teleop path verified.
+
+- 2025-09-11T06:02:01Z: Converged runtime to Domain 0. Disabled Jetson Foxglove proxy; started native foxglove_bridge on :8765. RPi alpha-leo-bringup switched to Domain 0; camera stack visible. Installed leo_msgs + topic_tools on Jetson. Teleop works via /alpha/cmd_vel→/cmd_vel relay on Domain 0; MCU subscriber confirmed. Added scripts/ros_call_trigger.py and alpha_configs/bridge_mcu_0_42.yaml (for future domain bridging; not active). Started robot_state_publisher on Domain 0 to show URDF box. Next: formalize systemd units for Domain 0, Foxglove dashboard, relay/shutdown controls, joystick input.

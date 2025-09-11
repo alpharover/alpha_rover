@@ -51,6 +51,7 @@ notes: >
 
 ## Change & Decision Log
 - 2025-08-30: Created trunk baseline and legacy branch/worktree. Scaffolding added for utils, bringup, LiDAR (C++), mapping skeleton, observability, mode manager, orchestrator; CI enabled; bringup launch added.
+- 2025-09-11: Jetson↔RPi bring-up stabilized for Foxglove. Fixed Leo adapter packaging and pushed `platform/leo-rover-bringup-50net`. Added Foxglove/rosbridge services. Consolidated RPi bringup to a single system unit; disabled legacy user bringup to eliminate duplicate nodes. Switched RPi discovery to multicast (Domain 42) pending architect decision on final discovery model. Camera (RPi CSI) streaming; Teleop topics visible; base motion pending final command topic/subscriber.
 ---
 
 # ALPHA Project — AGENTS Overview

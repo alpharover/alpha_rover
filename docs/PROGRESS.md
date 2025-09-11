@@ -117,3 +117,48 @@ Artifacts and decisions are linked from AGENTS docs where relevant.
 2025-09-04T00:00:00Z — Jetson SCO: smoke=pass; heartbeat=pass; Pi armed via SSH, both tests observed and logged.
 2025-09-04T05:20:00Z — Camera bridge mapped (/alpha/camera/front/*), validated via Pi; adapter moved under systemd; adapter builds on Jetson; docs updated.
 2025-09-04T05:25:00Z — Session wrap-up: discovery/server-mode steady; adapter under systemd; camera aliases validated; NFSv4 mounted; snapshot + nightly sync armed; handshake tests pass.
+
+## 2025-09-10 — 2025-09-11 — Platform bring-up (Jetson↔RPi), Foxglove, discovery alignment
+
+- Repo & packaging
+  - Pushed branch `platform/leo-rover-bringup-50net` with adapter packaging fix (explicit Python packages, added `__init__.py`).
+  - `.gitignore`: ignore `backups/`.
+
+- Jetson (Orin) services and endpoints
+  - `alpha-adapter.service` active; bridges configured:
+    - `/alpha/cmd_vel` → `/cmd_vel`
+    - `/camera/image_raw` → `/alpha/camera/front/image`
+    - `/camera/camera_info` → `/alpha/camera/front/camera_info`
+  - Foxglove endpoints stood up:
+    - `alpha-foxglove-bridge.service` on 8765 (Jetson). Initially pointed at Jetson; later proxied to RPi for reliability.
+    - Rosbridge: initially `alpha-rosbridge.service` on 9090 (Jetson), later proxy to RPi to avoid duplicate graphs.
+
+- RPi (Leo) services and camera pipeline
+  - Consolidated bringup to a single unit: `alpha-leo-bringup.service` (system). Disabled legacy user `ros-nodes.service` and standalone `alpha-rosbridge.service` to remove duplicates and port contention.
+  - CSI camera working via v4l2 + image_proc (component container `/image_container`).
+    - Topics present: `/camera/image_raw`, `/camera/camera_info`, `/camera/image_color`, `/camera/image_rect(_color)` (+ compressed variants).
+  - Foxglove bridge `alpha-foxglove-bridge.service` active on 8765.
+  - Micro‑ROS agent (`uros-agent.service`) active; logs show XRCE client sessions created.
+
+- Discovery & networking
+  - Initial misconfiguration: RPi had `ROS_DISCOVERY_SERVER=192.168.50.10:11811` while current RPi subnet is 192.168.1.0/24. This blocked proper topic discovery and caused Foxglove to list only a few topics.
+  - Resolution: switched RPi bringup/agent to multicast discovery on Domain 42; kept Foxglove bridge explicitly ignoring DS var for stable enumeration.
+  - Note: finalize decision with architect: stick to multicast on a common L2, or run DS bound to a reachable Jetson IP (e.g., 192.168.1.10:11811) and set both hosts accordingly.
+
+- Teleop path
+  - Exposed `/alpha/cmd_vel` and `/cmd_vel` in Foxglove.
+  - Added minimal relay on RPi: `/alpha/cmd_vel` → `/cmd_vel` (`alpha-teleop-relay.service`), plus an ultra‑low‑rate `/alpha/cmd_vel` beacon publisher to keep the topic visible in UI.
+  - Current status: `/cmd_vel` has publishers (relay) but 0 subscribers; firmware parameter service sometimes reports “not active” during early startup. Wheels do not move yet.
+
+- Duplicates cleanup
+  - Removed duplicate rosbridge and duplicate bringup (source of repeated `/firmware*` nodes). Some transient duplicate `/firmware` names still appear during XRCE reconnects; will re‑check after discovery decision and a clean restart window.
+
+- Operator UI status (Foxglove)
+  - Camera feed working from RPi CSI pipeline.
+  - Teleop topics visible; awaiting base subscription to complete motion path.
+
+- Open items / next steps (pending architect guidance)
+  1) Discovery model: choose multicast vs. DS-on-Jetson bound to a reachable IP; update both hosts consistently.
+  2) Base motion: confirm the MCU’s velocity command topic; if not `/cmd_vel`, retarget relay; otherwise investigate firmware subscription enable/health.
+  3) Unify Foxglove endpoint: either keep RPi as primary bridge or run Jetson bridge as aggregator once discovery is finalized.
+  4) Remove temporary beacon once Teleop path verified.
